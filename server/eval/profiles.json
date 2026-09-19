@@ -1,0 +1,233 @@
+[
+  {
+    "_README": "Expected IDs below match the PLACEHOLDER seed data. Once you correct the scheme figures from the official PDFs, you must rework these expectations by hand too — that is what makes the eval trustworthy. Add profiles until you have 20.",
+    "id": "_meta",
+    "skip": true
+  },
+  {
+    "id": "p1",
+    "note": "OBC, income above the OBC ceiling but under the central merit ceiling",
+    "profile": {
+      "income": 400000,
+      "category": "OBC",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 4,
+      "gender": "MALE",
+      "marks_pct": 85
+    },
+    "expected_eligible": ["css-ug"],
+    "must_not_include": ["pms-obc", "up-postmatric"]
+  },
+  {
+    "id": "p2",
+    "note": "SC, low income, comfortably inside the SC ceiling",
+    "profile": {
+      "income": 180000,
+      "category": "SC",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 2,
+      "gender": "MALE",
+      "marks_pct": 62
+    },
+    "expected_eligible": ["pms-sc", "up-postmatric"],
+    "must_not_include": ["pms-obc", "aicte-pragati"]
+  },
+  {
+    "id": "p3",
+    "note": "Female first-year B.Tech — the Pragati case",
+    "profile": {
+      "income": 600000,
+      "category": "GENERAL",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 1,
+      "gender": "FEMALE",
+      "marks_pct": 78
+    },
+    "expected_eligible": ["aicte-pragati"],
+    "must_not_include": ["aicte-saksham", "css-ug"]
+  },
+  {
+    "id": "p4",
+    "note": "Male first-year, same income — should NOT get the girls-only scheme",
+    "profile": {
+      "income": 600000,
+      "category": "GENERAL",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 1,
+      "gender": "MALE",
+      "marks_pct": 78
+    },
+    "expected_eligible": [],
+    "must_not_include": ["aicte-pragati"]
+  },
+  {
+    "id": "p5",
+    "note": "Disabled first-year technical student",
+    "profile": {
+      "income": 500000,
+      "category": "GENERAL",
+      "state": "MH",
+      "course_level": "UG",
+      "year_of_study": 1,
+      "gender": "MALE",
+      "marks_pct": 70,
+      "disability": true
+    },
+    "expected_eligible": ["aicte-saksham"],
+    "must_not_include": ["up-postmatric"]
+  },
+  {
+    "id": "p6",
+    "note": "Out-of-state student — UP schemes must be excluded",
+    "profile": {
+      "income": 150000,
+      "category": "SC",
+      "state": "BR",
+      "course_level": "UG",
+      "year_of_study": 3,
+      "gender": "FEMALE",
+      "marks_pct": 65
+    },
+    "expected_eligible": ["pms-sc"],
+    "must_not_include": ["up-postmatric", "up-dashmottar"]
+  },
+  {
+    "id": "p7",
+    "note": "High marks, income just under the central merit ceiling",
+    "profile": {
+      "income": 440000,
+      "category": "GENERAL",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 2,
+      "gender": "MALE",
+      "marks_pct": 88
+    },
+    "expected_eligible": ["css-ug"],
+    "must_not_include": ["pms-sc", "pms-obc"]
+  },
+  {
+    "id": "p8",
+    "note": "Same as p7 but marks below the merit threshold",
+    "profile": {
+      "income": 440000,
+      "category": "GENERAL",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 2,
+      "gender": "MALE",
+      "marks_pct": 71
+    },
+    "expected_eligible": [],
+    "must_not_include": ["css-ug"]
+  },
+  {
+    "id": "p9",
+    "note": "Class 9 school student, low income",
+    "profile": {
+      "income": 200000,
+      "category": "OBC",
+      "state": "UP",
+      "course_level": "SCHOOL",
+      "year_of_study": 9,
+      "gender": "FEMALE",
+      "marks_pct": 68
+    },
+    "expected_eligible": ["pm-yasasvi", "nmms", "up-kanya-sumangala"],
+    "must_not_include": ["css-ug", "pms-obc"]
+  },
+  {
+    "id": "p10",
+    "note": "Minority PG woman - qualifies under three different schemes",
+    "profile": {
+      "income": 190000,
+      "category": "MINORITY",
+      "state": "UP",
+      "course_level": "PG",
+      "year_of_study": 1,
+      "gender": "FEMALE",
+      "marks_pct": 58
+    },
+    "expected_eligible": ["up-dashmottar", "mcm-minority", "igp-single-girl"],
+    "must_not_include": ["pms-obc", "aicte-pragati"]
+  },
+  {
+    "id": "p11",
+    "note": "ST student - tests the ST-only scheme",
+    "profile": {
+      "income": 200000,
+      "category": "ST",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 2,
+      "gender": "MALE",
+      "marks_pct": 65
+    },
+    "expected_eligible": ["pms-st", "up-postmatric"],
+    "must_not_include": ["pms-sc", "pms-obc"]
+  },
+  {
+    "id": "p12",
+    "note": "Assam student - tests a non-UP state scheme",
+    "profile": {
+      "income": 300000,
+      "category": "GENERAL",
+      "state": "AS",
+      "course_level": "UG",
+      "year_of_study": 1,
+      "gender": "MALE",
+      "marks_pct": 70
+    },
+    "expected_eligible": ["ishan-uday"],
+    "must_not_include": ["up-postmatric", "aicte-pragati"]
+  },
+  {
+    "id": "p13",
+    "note": "High income PG woman - only the scheme with NO income ceiling should match",
+    "profile": {
+      "income": 1200000,
+      "category": "GENERAL",
+      "state": "KA",
+      "course_level": "PG",
+      "year_of_study": 1,
+      "gender": "FEMALE",
+      "marks_pct": 72
+    },
+    "expected_eligible": ["igp-single-girl"],
+    "must_not_include": ["css-ug", "pms-obc", "mcm-minority"]
+  },
+  {
+    "id": "p14",
+    "note": "UP Class 12 girl - three school schemes overlap",
+    "profile": {
+      "income": 150000,
+      "category": "OBC",
+      "state": "UP",
+      "course_level": "SCHOOL",
+      "year_of_study": 12,
+      "gender": "FEMALE",
+      "marks_pct": 75
+    },
+    "expected_eligible": ["nmms", "up-kanya-sumangala", "up-kanya-vidya-dhan"],
+    "must_not_include": ["pm-yasasvi"]
+  },
+  {
+    "id": "p15",
+    "note": "Minority student below every marks floor - should get nothing",
+    "profile": {
+      "income": 190000,
+      "category": "MINORITY",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 2,
+      "gender": "MALE",
+      "marks_pct": 45
+    },
+    "expected_eligible": [],
+    "must_not_include": ["mcm-minority", "up-dashmottar"]
+  }
+]

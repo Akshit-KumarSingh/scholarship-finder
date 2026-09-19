@@ -1,0 +1,7 @@
+node_modules/
+.env
+.env.local
+dist/
+pdfs/
+server/data/draft-*.json
+.DS_Store

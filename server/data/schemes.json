@@ -1,0 +1,428 @@
+[
+  {
+    "_README": "EVERY RECORD BELOW IS UNVERIFIED PLACEHOLDER DATA. The scheme names are real; the numbers are illustrative so the pipeline has something to run on. Before you demo this, open each official PDF and correct every field, then set verified:true. A wrong income ceiling silently tells a student they are ineligible when they are not.",
+    "id": "_meta",
+    "name": "_meta",
+    "skip": true
+  },
+  {
+    "id": "pms-sc",
+    "name": "Post Matric Scholarship for SC Students",
+    "authority": "Ministry of Social Justice and Empowerment",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://scholarships.gov.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Full course fee reimbursement plus monthly maintenance allowance",
+    "deadline": "2025-10-31",
+    "eligibility": {
+      "income_max": 250000,
+      "categories": ["SC"],
+      "course_levels": ["UG", "PG", "DIPLOMA"],
+      "year_of_study": [1, 2, 3, 4, 5],
+      "gender": "ALL",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "The scholarship is open to students belonging to Scheduled Castes who are pursuing recognised post matriculation or post secondary courses in a recognised institution. The annual income of parents or guardians from all sources must not exceed the prescribed ceiling for the academic year. Students already receiving another central scholarship for the same purpose are not eligible to hold both.\n\nFamily income means the combined gross annual income of both parents or of the guardian, taken from all sources including salary, business, agriculture, rent and interest. The income of an earning sibling is not counted unless that sibling is the legal guardian of the applicant. Income is certified for the financial year preceding the year of application.",
+      "benefits": "Eligible students receive reimbursement of compulsory non refundable fees charged by the institution, along with a monthly maintenance allowance for the duration of the course. Hostellers receive a higher maintenance rate than day scholars. Additional allowances are payable for study tours, thesis typing and printing for research scholars, and for books and stationery.\n\nPayment is made directly into the bank account of the student under Direct Benefit Transfer. The account must be seeded with Aadhaar for the transfer to succeed.",
+      "documents": "Applicants must upload a caste certificate issued by a competent revenue authority, an income certificate for the preceding financial year issued by the Tehsildar or an officer of equivalent rank, the mark sheet of the last qualifying examination, a bona fide certificate or fee receipt from the current institution, a copy of the Aadhaar card, and a bank passbook page showing the account number and IFSC code in the applicant's own name.\n\nAll documents must be self attested. Scanned copies must be legible and within the file size limits stated on the portal. An application with an illegible income certificate is the single most common cause of rejection.",
+      "process": "Applications are submitted online through the National Scholarship Portal. The student registers with a mobile number and Aadhaar, completes the application form, uploads documents, and submits it for verification by the institution. The institution verifies the enrolment details and forwards the application to the state department.\n\nRenewal in subsequent years requires the student to log in with the same registration number and submit a renewal application along with the previous year's mark sheet. A student who fails to be promoted to the next class is not eligible for renewal for that year, but may apply again after clearing the year. Renewal is not automatic and lapses if not filed within the window."
+    }
+  },
+  {
+    "id": "pms-obc",
+    "name": "Post Matric Scholarship for OBC Students",
+    "authority": "Ministry of Social Justice and Empowerment",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://scholarships.gov.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Course fee reimbursement plus maintenance allowance",
+    "deadline": "2025-10-31",
+    "eligibility": {
+      "income_max": 150000,
+      "categories": ["OBC"],
+      "course_levels": ["UG", "PG", "DIPLOMA"],
+      "year_of_study": [1, 2, 3, 4, 5],
+      "gender": "ALL",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "Open to students belonging to Other Backward Classes as notified by the central or state government, pursuing recognised post matriculation courses. The parental annual income ceiling for this scheme is lower than that of the corresponding Scheduled Caste scheme, and applications above the ceiling are rejected at verification.\n\nA student may hold only one scholarship at a time. Where a student qualifies for more than one scheme, the student must choose and declare which one is being availed.",
+      "benefits": "Reimbursement of compulsory fees along with a monthly maintenance allowance paid for the duration of the course. Rates differ for hostellers and day scholars, and for different course groups.",
+      "documents": "Caste certificate for OBC issued by a competent authority along with a non creamy layer declaration, income certificate for the preceding financial year, last qualifying mark sheet, institution bona fide certificate, Aadhaar, and a bank passbook in the applicant's own name.\n\nThe non creamy layer declaration is specific to this scheme and is the document most often missed by applicants who have previously applied to other scholarships.",
+      "process": "Submitted online through the National Scholarship Portal with institutional verification, followed by state level verification. Renewal requires the previous year's mark sheet and proof of promotion to the next class."
+    }
+  },
+  {
+    "id": "css-ug",
+    "name": "Central Sector Scheme of Scholarship for College and University Students",
+    "authority": "Department of Higher Education",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://scholarships.gov.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Annual scholarship paid monthly for the course duration",
+    "deadline": "2025-10-31",
+    "eligibility": {
+      "income_max": 450000,
+      "categories": ["ALL"],
+      "course_levels": ["UG", "PG"],
+      "year_of_study": [1, 2, 3, 4, 5],
+      "gender": "ALL",
+      "min_marks_pct": 80,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "Awarded on merit to students who scored above the specified percentile in the Class 12 board examination and are pursuing a regular degree course. The scheme is open to all categories subject to the parental income ceiling. Students pursuing a diploma or a distance learning programme are not covered.\n\nThe merit condition is assessed on the board examination result, not on current college performance. Continuation of the scholarship in later years does, however, depend on maintaining the required percentage in the college examinations.",
+      "benefits": "A fixed annual amount paid in monthly instalments, at a higher rate for postgraduate study than for undergraduate study. The amount is paid regardless of the fees charged by the institution, so it functions as a maintenance grant rather than a fee waiver.",
+      "documents": "Class 12 mark sheet showing the qualifying percentage, income certificate, admission proof from the current institution, Aadhaar, and bank account details in the student's name.",
+      "process": "Applied online on the National Scholarship Portal. Renewal each year requires the student to have secured the minimum aggregate marks in the previous college year and to have maintained a minimum attendance percentage. Falling below either threshold suspends the scholarship for that year."
+    }
+  },
+  {
+    "id": "aicte-pragati",
+    "name": "AICTE Pragati Scholarship for Girl Students",
+    "authority": "All India Council for Technical Education",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://www.aicte-india.org/schemes/students-development-schemes",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Tuition fee reimbursement plus an incidentals allowance",
+    "deadline": "2025-10-31",
+    "eligibility": {
+      "income_max": 800000,
+      "categories": ["ALL"],
+      "course_levels": ["UG", "DIPLOMA"],
+      "year_of_study": [1, 2],
+      "gender": "FEMALE",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "For girl students admitted to the first year of a degree or diploma programme in a technical institution approved by the All India Council for Technical Education, or admitted to the second year through lateral entry. Not more than two girl children per family may avail the scholarship.\n\nAdmission must be through a centralised admission process conducted by the state or central government. Students admitted against management quota seats are not covered.",
+      "benefits": "Reimbursement of tuition fee up to a ceiling, or the actual fee charged, whichever is less. An additional annual allowance is provided for the purchase of books, equipment, software and other incidentals.",
+      "documents": "Admission letter from the technical institution, fee receipt, income certificate, Class 12 mark sheet, a family declaration confirming the number of girl children availing the scheme, Aadhaar, and bank details.",
+      "process": "Applied on the National Scholarship Portal under the AICTE section. The institution verifies that the programme is an approved technical programme. Renewal for later years requires promotion to the next year of study and continued enrolment in the same institution."
+    }
+  },
+  {
+    "id": "aicte-saksham",
+    "name": "AICTE Saksham Scholarship for Specially Abled Students",
+    "authority": "All India Council for Technical Education",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://www.aicte-india.org/schemes/students-development-schemes",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Tuition fee reimbursement plus an incidentals allowance",
+    "deadline": "2025-10-31",
+    "eligibility": {
+      "income_max": 800000,
+      "categories": ["ALL"],
+      "course_levels": ["UG", "DIPLOMA"],
+      "year_of_study": [1, 2],
+      "gender": "ALL",
+      "min_marks_pct": null,
+      "requires_disability": true,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "For students with a certified disability of not less than the prescribed percentage, admitted to the first year of a technical degree or diploma programme in an approved institution, or to the second year through lateral entry. A valid disability certificate issued by a competent medical authority is mandatory.\n\nThe parental income ceiling applies in addition to the disability condition.",
+      "benefits": "Tuition fee reimbursement up to a ceiling along with an annual incidentals allowance intended to cover assistive equipment, books and software.",
+      "documents": "Disability certificate from a competent medical authority stating the percentage of disability, admission letter, fee receipt, income certificate, Aadhaar, and bank details.",
+      "process": "Applied through the National Scholarship Portal. Institutional verification confirms both the enrolment and the validity of the disability certificate. Renewal requires promotion to the next year."
+    }
+  },
+  {
+    "id": "pm-yasasvi",
+    "name": "PM YASASVI Scholarship for OBC, EBC and DNT Students",
+    "authority": "Ministry of Social Justice and Empowerment",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://yet.nta.ac.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Annual scholarship towards school and hostel expenses",
+    "deadline": "2025-09-30",
+    "eligibility": {
+      "income_max": 250000,
+      "categories": ["OBC", "EWS"],
+      "course_levels": ["SCHOOL"],
+      "year_of_study": [9, 11],
+      "gender": "ALL",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "For students of Other Backward Classes, Economically Backward Classes and Denotified Tribes studying in Class 9 or Class 11 in a recognised school, selected through a national entrance test. The parental income ceiling applies.\n\nSelection is competitive and based on the entrance test result, so meeting the income and category conditions alone does not guarantee an award.",
+      "benefits": "An annual amount towards school fees and hostel expenses, paid at a higher rate for Class 11 students than for Class 9 students.",
+      "documents": "Category certificate, income certificate, school bona fide certificate, previous class mark sheet, Aadhaar, and bank details in the name of the student or guardian.",
+      "process": "Candidates register for the entrance test, appear at a designated centre, and selected candidates then complete the scholarship application on the National Scholarship Portal. Renewal depends on satisfactory academic progress and continued enrolment."
+    }
+  },
+  {
+    "id": "nmms",
+    "name": "National Means cum Merit Scholarship",
+    "authority": "Department of School Education and Literacy",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://scholarships.gov.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Annual scholarship for Classes 9 to 12",
+    "deadline": "2025-11-15",
+    "eligibility": {
+      "income_max": 350000,
+      "categories": ["ALL"],
+      "course_levels": ["SCHOOL"],
+      "year_of_study": [9, 10, 11, 12],
+      "gender": "ALL",
+      "min_marks_pct": 55,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "Awarded to students studying in Classes 9 to 12 in government, government aided or local body schools, who have cleared the state level selection test and whose parental income is within the ceiling. Students studying in private unaided schools, residential schools run by central bodies, and certain other categories of school are not eligible.\n\nA minimum percentage in the Class 7 examination is required to sit the selection test, and a minimum percentage must be maintained to continue receiving the award.",
+      "benefits": "A fixed annual amount disbursed for up to four years covering Classes 9 through 12, credited directly to the student's bank account.",
+      "documents": "Proof of school type, income certificate, previous class mark sheet, selection test result, Aadhaar, and bank account details.",
+      "process": "The state conducts a selection test. Successful candidates apply on the National Scholarship Portal. Renewal at each class change requires promotion with the prescribed minimum marks, with a relaxation available for reserved category students."
+    }
+  },
+  {
+    "id": "up-postmatric",
+    "name": "UP Post Matric Scholarship (Other than Intermediate)",
+    "authority": "Social Welfare Department, Government of Uttar Pradesh",
+    "state": "UP",
+    "verified": false,
+    "source_url": "https://scholarship.up.gov.in/",
+    "apply_url": "https://scholarship.up.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Fee reimbursement plus maintenance allowance",
+    "deadline": "2025-12-31",
+    "eligibility": {
+      "income_max": 200000,
+      "categories": ["SC", "ST", "OBC", "GENERAL"],
+      "course_levels": ["UG", "PG", "DIPLOMA"],
+      "year_of_study": [1, 2, 3, 4, 5],
+      "gender": "ALL",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": true
+    },
+    "sections": {
+      "eligibility": "Open to students who are permanent residents of Uttar Pradesh and are enrolled in a recognised institution within or outside the state for a course above the intermediate level. Income ceilings differ between the general category and the reserved categories, and the applicable ceiling is the one notified for the applicant's category in that academic year.\n\nA domicile certificate is required. Students whose institution is located outside Uttar Pradesh must additionally provide institutional verification from that institution.",
+      "benefits": "Reimbursement of prescribed fees along with a maintenance allowance, credited through Direct Benefit Transfer to an Aadhaar seeded bank account.",
+      "documents": "Domicile certificate, caste certificate where applicable, income certificate issued by the Tehsildar, previous qualifying mark sheet, current year fee receipt, institution enrolment proof, Aadhaar, and a bank passbook in the student's own name.\n\nThe income certificate and caste certificate must carry certificate numbers that can be verified online against the state records portal, and an unverifiable certificate number causes automatic rejection.",
+      "process": "Registration and application take place on the state scholarship portal, which runs in two phases each academic year with separate windows for fresh and renewal applications. After submitting online, the student must take a printout of the application with the required enclosures and submit it to the institution within the stated period. Failure to submit the hard copy invalidates an otherwise complete online application.\n\nRenewal requires a fresh application in the renewal window with the previous year's result. A student who has a year gap in study must apply as a fresh applicant rather than a renewal applicant."
+    }
+  },
+  {
+    "id": "up-dashmottar",
+    "name": "UP Dashmottar Scholarship for Minority Students",
+    "authority": "Minority Welfare Department, Government of Uttar Pradesh",
+    "state": "UP",
+    "verified": false,
+    "source_url": "https://scholarship.up.gov.in/",
+    "apply_url": "https://scholarship.up.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Fee reimbursement plus maintenance allowance",
+    "deadline": "2025-12-31",
+    "eligibility": {
+      "income_max": 200000,
+      "categories": ["MINORITY"],
+      "course_levels": ["UG", "PG", "DIPLOMA"],
+      "year_of_study": [1, 2, 3, 4, 5],
+      "gender": "ALL",
+      "min_marks_pct": 50,
+      "requires_disability": false,
+      "domicile_required": true
+    },
+    "sections": {
+      "eligibility": "For students belonging to notified minority communities who are permanent residents of Uttar Pradesh and are studying in a recognised institution at post matriculation level. A minimum percentage in the previous qualifying examination is required.\n\nThe applicant must furnish a self declaration of community along with the domicile and income certificates.",
+      "benefits": "Reimbursement of prescribed fees together with a maintenance allowance for the course duration, subject to annual budget availability.",
+      "documents": "Domicile certificate, minority community declaration, income certificate, previous mark sheet showing the minimum required percentage, current fee receipt, Aadhaar, and bank details.",
+      "process": "Applied on the state scholarship portal within the notified window, followed by hard copy submission to the institution. Renewal applications are filed in a separate window and require the previous year's result."
+    }
+  },
+  {
+    "id": "up-kanya-sumangala",
+    "name": "Mukhyamantri Kanya Sumangala Yojana",
+    "authority": "Department of Women and Child Development, Government of Uttar Pradesh",
+    "state": "UP",
+    "verified": false,
+    "source_url": "https://mksy.up.gov.in/",
+    "apply_url": "https://mksy.up.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Staged cash transfer across six life stages of a girl child",
+    "deadline": "2026-03-31",
+    "eligibility": {
+      "income_max": 300000,
+      "categories": ["ALL"],
+      "course_levels": ["SCHOOL", "UG", "DIPLOMA"],
+      "year_of_study": [1, 2, 3, 4, 9, 10, 11, 12],
+      "gender": "FEMALE",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": true
+    },
+    "sections": {
+      "eligibility": "For girl children in families permanently resident in Uttar Pradesh whose annual family income is within the ceiling. Benefits are paid at defined stages including birth, immunisation completion, admission to Class 1, Class 6, Class 9, and admission to a degree or a two year or longer diploma programme after Class 12.\n\nA maximum of two girl children in a family may benefit. Where the second delivery results in twins, a third child may be included. A family that has adopted a girl child may claim for the adopted child along with one biological child.",
+      "benefits": "A cash transfer at each of the six qualifying stages, paid directly into the bank account of the mother or guardian, or of the girl herself once she is an adult. The final stage is payable on admission to a degree course or a diploma of at least two years duration.",
+      "documents": "Domicile certificate, family income certificate, birth certificate of the girl child, identity proof of the parent or guardian, a photograph, the bank passbook, and stage specific proof such as the school admission record or the degree admission letter.",
+      "process": "Applications are made on the dedicated state portal rather than the general scholarship portal. The application is verified at the block or district level. A separate claim is filed at each stage as the girl becomes eligible, so a family applies more than once over the years rather than filing a single application."
+    }
+  },
+  {
+    "id": "pms-st",
+    "name": "Post Matric Scholarship for ST Students",
+    "authority": "Ministry of Tribal Affairs",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://scholarships.gov.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Full fee reimbursement plus monthly maintenance allowance",
+    "deadline": "2025-10-31",
+    "eligibility": {
+      "income_max": 250000,
+      "categories": ["ST"],
+      "course_levels": ["UG", "PG", "DIPLOMA"],
+      "year_of_study": [1, 2, 3, 4, 5],
+      "gender": "ALL",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "Open to students belonging to Scheduled Tribes pursuing recognised post matriculation courses in a recognised institution. The annual income of parents or guardians from all sources must not exceed the prescribed ceiling for the academic year.\n\nStudents already holding another central scholarship for the same course are not eligible to draw both at the same time. Where a student qualifies under more than one scheme, the student must declare which one is being availed.",
+      "benefits": "Reimbursement of compulsory non refundable fees charged by the institution, along with a monthly maintenance allowance for the duration of the course. Hostellers receive a higher maintenance rate than day scholars.\n\nAdditional allowances are payable for book grants, and for thesis typing and printing for research scholars. Payment is made directly into the bank account of the student under Direct Benefit Transfer.",
+      "documents": "A Scheduled Tribe certificate issued by a competent revenue authority, an income certificate for the preceding financial year issued by the Tehsildar or an officer of equivalent rank, the mark sheet of the last qualifying examination, a bona fide certificate from the current institution, a copy of the Aadhaar card, and a bank passbook page in the applicant's own name.\n\nWhere the applicant belongs to a Particularly Vulnerable Tribal Group, the certificate must state this, as a relaxed income condition may apply.",
+      "process": "Applications are submitted online through the National Scholarship Portal, verified by the institution, and forwarded to the state tribal welfare department. Renewal in later years requires promotion to the next class and a fresh renewal application within the notified window."
+    }
+  },
+  {
+    "id": "mcm-minority",
+    "name": "Merit cum Means Scholarship for Professional and Technical Courses (Minority)",
+    "authority": "Ministry of Minority Affairs",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://scholarships.gov.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Course fee support plus a maintenance allowance",
+    "deadline": "2025-09-30",
+    "eligibility": {
+      "income_max": 250000,
+      "categories": ["MINORITY"],
+      "course_levels": ["UG", "PG"],
+      "year_of_study": [1, 2, 3, 4, 5],
+      "gender": "ALL",
+      "min_marks_pct": 50,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "For students of notified minority communities admitted to a professional or technical course at undergraduate or postgraduate level in a recognised institution. The applicant must have secured at least the minimum percentage in the previous qualifying examination, and parental income must be within the ceiling.\n\nAdmission must be through a competitive entrance examination. Where admission is not through an entrance examination, the applicant must have secured a higher qualifying percentage. Not more than two students from the same family may receive this scholarship.",
+      "benefits": "Course fee support up to an annual ceiling, or the actual fee charged, whichever is lower, together with a maintenance allowance paid for the months of the academic session. Hostellers receive a higher maintenance rate than day scholars.",
+      "documents": "A self declaration of community, an income certificate for the preceding financial year, the previous qualifying mark sheet showing the required percentage, the admission letter and current fee receipt, a family declaration on the number of siblings availing the scheme, Aadhaar, and bank account details in the student's own name.",
+      "process": "Applied online through the National Scholarship Portal within the notified window. The institution verifies enrolment and course type, after which the state nodal officer verifies and forwards the application. Renewal requires promotion to the next year and continued enrolment in the same course."
+    }
+  },
+  {
+    "id": "ishan-uday",
+    "name": "Ishan Uday Special Scholarship for North Eastern Region",
+    "authority": "University Grants Commission",
+    "state": "AS",
+    "verified": false,
+    "source_url": "https://www.ugc.gov.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Monthly scholarship for the full duration of the degree",
+    "deadline": "2025-11-30",
+    "eligibility": {
+      "income_max": 450000,
+      "categories": ["ALL"],
+      "course_levels": ["UG", "DIPLOMA"],
+      "year_of_study": [1, 2, 3, 4],
+      "gender": "ALL",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": true
+    },
+    "sections": {
+      "eligibility": "For students who are permanent residents of the North Eastern Region and have passed the Class 12 examination from a board in the region, and who are admitted to a general degree, technical or professional course in a recognised institution anywhere in the country.\n\nA domicile certificate from the home state is required. Students pursuing a course through distance learning are not covered. A candidate may hold this scholarship alongside a fee waiver from the institution, but not alongside another central scholarship.",
+      "benefits": "A fixed monthly amount paid for ten months of each academic year, for the full duration of the degree course. The amount is intended to cover living expenses and is paid regardless of the fee charged by the institution.",
+      "documents": "Domicile certificate from the home state in the North Eastern Region, Class 12 mark sheet from a board in the region, admission proof from the current institution, income certificate for the preceding financial year, Aadhaar, and bank account details in the student's own name.",
+      "process": "Applied on the National Scholarship Portal. Verification is done by the institution and then by the University Grants Commission. Renewal each year requires the student to be promoted and to maintain the minimum attendance prescribed by the institution. A gap year breaks continuity and the scholarship cannot be resumed."
+    }
+  },
+  {
+    "id": "igp-single-girl",
+    "name": "Indira Gandhi Scholarship for Single Girl Child (Postgraduate)",
+    "authority": "University Grants Commission",
+    "state": "ALL",
+    "verified": false,
+    "source_url": "https://www.ugc.gov.in/",
+    "apply_url": "https://scholarships.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "Annual scholarship for two years of postgraduate study",
+    "deadline": "2025-12-15",
+    "eligibility": {
+      "income_max": null,
+      "categories": ["ALL"],
+      "course_levels": ["PG"],
+      "year_of_study": [1],
+      "gender": "FEMALE",
+      "min_marks_pct": null,
+      "requires_disability": false,
+      "domicile_required": false
+    },
+    "sections": {
+      "eligibility": "For a girl student who is the only child of her parents and has taken admission to the first year of a full time postgraduate course in a recognised university or college. Twins or two daughters with no brother are also treated as eligible under this scheme.\n\nThere is no parental income condition attached to this scholarship, which distinguishes it from most other schemes. The applicant must not be older than the prescribed upper age limit at the time of admission, and must be enrolled in a regular course rather than a distance learning programme.",
+      "benefits": "A fixed annual amount paid for two years of the postgraduate course. Payment is made directly into the bank account of the student. The scholarship is not renewable beyond the normal duration of the course.",
+      "documents": "A single girl child certificate or a sworn affidavit from the parents confirming the applicant is their only child, the admission letter for the postgraduate course, the graduation mark sheet, proof of age, Aadhaar, and bank account details in the student's own name.\n\nThe affidavit is the document most often prepared incorrectly, as it must name the parents and state clearly that they have no other child.",
+      "process": "Applied on the National Scholarship Portal, verified by the university or college. The scholarship continues into the second year automatically on confirmation of promotion, so a separate renewal application is not filed, but the institution must confirm continued enrolment."
+    }
+  },
+  {
+    "id": "up-kanya-vidya-dhan",
+    "name": "UP Kanya Vidya Dhan Yojana",
+    "authority": "Department of Secondary Education, Government of Uttar Pradesh",
+    "state": "UP",
+    "verified": false,
+    "source_url": "https://scholarship.up.gov.in/",
+    "apply_url": "https://scholarship.up.gov.in/",
+    "academic_year": "2025-26",
+    "benefit_amount": "One time cash grant on passing Class 12",
+    "deadline": "2026-01-31",
+    "eligibility": {
+      "income_max": 200000,
+      "categories": ["ALL"],
+      "course_levels": ["SCHOOL"],
+      "year_of_study": [12],
+      "gender": "FEMALE",
+      "min_marks_pct": 60,
+      "requires_disability": false,
+      "domicile_required": true
+    },
+    "sections": {
+      "eligibility": "For girl students who are permanent residents of Uttar Pradesh and have passed the Class 12 examination from a recognised board with at least the prescribed percentage, and whose family income is within the ceiling. The grant is intended to support continuation into higher education.\n\nThe applicant must produce a domicile certificate. Students who have already taken admission to a higher course may still apply, as the grant is linked to passing Class 12 rather than to current enrolment.",
+      "benefits": "A one time cash grant credited directly to the bank account of the girl student after verification. Unlike most scholarships in this list, it is a single payment rather than a recurring allowance, so there is no renewal.",
+      "documents": "Domicile certificate, Class 12 mark sheet showing the required percentage, family income certificate issued by the Tehsildar, Aadhaar, a photograph, and a bank passbook page in the name of the student.\n\nThe bank account must be in the student's own name and seeded with Aadhaar, as the transfer cannot be made to a parent's account.",
+      "process": "Applied on the state scholarship portal within the notified window, after which the school forwards the verified list to the district inspector of schools. Because the grant is a one time payment there is no renewal process, but an application rejected for a document error may be resubmitted in the same window."
+    }
+  }
+]
