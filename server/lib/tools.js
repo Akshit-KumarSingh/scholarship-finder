@@ -17,17 +17,24 @@ export const toolSchemas = [
         properties: {
           income: {
             type: "number",
-            description: "Annual family income in rupees, e.g. 400000 for 4 lakh",
+            description:
+              "Annual family income in rupees, e.g. 400000 for 4 lakh",
           },
           category: {
             type: "string",
             enum: ["GENERAL", "OBC", "SC", "ST", "EWS", "MINORITY"],
           },
           state: { type: "string", description: "State of domicile, e.g. UP" },
-          course_level: { type: "string", enum: ["UG", "PG", "DIPLOMA", "SCHOOL"] },
+          course_level: {
+            type: "string",
+            enum: ["UG", "PG", "DIPLOMA", "SCHOOL"],
+          },
           year_of_study: { type: "number" },
           gender: { type: "string", enum: ["MALE", "FEMALE", "OTHER"] },
-          marks_pct: { type: "number", description: "Percentage in last qualifying exam" },
+          marks_pct: {
+            type: "number",
+            description: "Percentage in last qualifying exam",
+          },
           disability: { type: "boolean" },
         },
         required: ["income", "category"],
@@ -43,7 +50,10 @@ export const toolSchemas = [
       parameters: {
         type: "object",
         properties: {
-          query: { type: "string", description: "What to look for, in natural language" },
+          query: {
+            type: "string",
+            description: "What to look for, in natural language",
+          },
           scheme_ids: {
             type: "array",
             items: { type: "string" },
@@ -103,7 +113,7 @@ export async function check_eligibility(profile) {
 
     if (e.income_max != null && profile.income > e.income_max) {
       fails.push(
-        `income ceiling is ${inr(e.income_max)}, you reported ${inr(profile.income)}`
+        `income ceiling is ${inr(e.income_max)}, you reported ${inr(profile.income)}`,
       );
     }
     if (e.categories?.length && !e.categories.includes("ALL")) {
@@ -111,7 +121,12 @@ export async function check_eligibility(profile) {
         fails.push(`open to ${e.categories.join("/")} only`);
       }
     }
-    if (s.state && s.state !== "ALL" && profile.state && s.state !== profile.state) {
+    if (
+      s.state &&
+      s.state !== "ALL" &&
+      profile.state &&
+      s.state !== profile.state
+    ) {
       fails.push(`restricted to ${s.state} domicile`);
     }
     if (e.course_levels?.length && profile.course_level) {
@@ -124,12 +139,19 @@ export async function check_eligibility(profile) {
         fails.push(`for year ${e.year_of_study.join(", ")} students`);
       }
     }
-    if (e.gender && e.gender !== "ALL" && profile.gender && e.gender !== profile.gender) {
+    if (
+      e.gender &&
+      e.gender !== "ALL" &&
+      profile.gender &&
+      e.gender !== profile.gender
+    ) {
       fails.push(`for ${e.gender.toLowerCase()} applicants`);
     }
     if (e.min_marks_pct != null && profile.marks_pct != null) {
       if (profile.marks_pct < e.min_marks_pct) {
-        fails.push(`needs ${e.min_marks_pct}% minimum, you reported ${profile.marks_pct}%`);
+        fails.push(
+          `needs ${e.min_marks_pct}% minimum, you reported ${profile.marks_pct}%`,
+        );
       }
     }
     if (e.requires_disability && !profile.disability) {
@@ -164,7 +186,17 @@ export async function check_eligibility(profile) {
 
 export async function search_scheme_docs({ query, scheme_ids, section }) {
   const [qVec] = await embed([query]);
-  const hits = await vectorSearch(qVec, { schemeIds: scheme_ids, section, k: 8 });
+  let hits = await vectorSearch(qVec, { schemeIds: scheme_ids, section, k: 8 });
+
+  // A filter that matches nothing is worse than no filter — the model may have
+  // guessed an id that doesn't exist. Widen the search rather than return empty.
+  if (hits.length === 0 && scheme_ids?.length) {
+    hits = await vectorSearch(qVec, { section, k: 8 });
+  }
+  if (hits.length === 0 && section) {
+    hits = await vectorSearch(qVec, { k: 8 });
+  }
+
   return hits.map((h) => ({
     scheme_id: h.scheme_id,
     scheme_name: h.scheme_name,
@@ -191,7 +223,7 @@ export async function compare_schemes({ scheme_ids }) {
           state: 1,
           verified: 1,
         },
-      }
+      },
     )
     .toArray();
   return rows;

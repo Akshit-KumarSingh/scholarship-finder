@@ -21,7 +21,9 @@ How to answer:
 - When a student just misses out, tell them the specific reason from near_misses.
 - Amounts in rupees, dates in plain language. Keep it short — students are scanning.
 - If a scheme is marked verified:false, note that the figures need checking against the official portal.
-- Close by pointing to the official portal for the final word.`;
+- Close by pointing to the official portal for the final word.
+
+Valid scheme_ids are exactly: pms-sc, pms-obc, pms-st, css-ug, aicte-pragati, aicte-saksham, pm-yasasvi, nmms, mcm-minority, ishan-uday, igp-single-girl, up-postmatric, up-dashmottar, up-kanya-sumangala, up-kanya-vidya-dhan. Never invent an id — if you are unsure which scheme the student means, call search_scheme_docs without scheme_ids.`;
 
 export async function runAgent(userMessage, history = []) {
   const messages = [
@@ -52,6 +54,7 @@ export async function runAgent(userMessage, history = []) {
       let args = {};
       try {
         args = JSON.parse(call.function.arguments || "{}");
+        console.log("[tool]", call.function.name, JSON.stringify(args));
         const impl = toolImpls[call.function.name];
         if (!impl) throw new Error(`Unknown tool ${call.function.name}`);
         result = await impl(args);
