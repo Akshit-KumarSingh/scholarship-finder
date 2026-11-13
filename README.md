@@ -43,7 +43,8 @@ So this project splits the problem:
 Structured rules decide **who is eligible**. Semantic search does the
 **explaining**. The agent is told to scope that search to the schemes the
 eligibility check returned; that is an instruction in the prompt, not something
-the code forces, so the search tool also widens its filter if a scheme id is wrong.
+the code forces. The search tool does enforce one thing: an unknown scheme id
+is rejected with the list of real ids, so the model has to retry with a real one.
 
 ---
 
@@ -89,6 +90,13 @@ Exact rules are only as good as their inputs, so the inputs are now guarded too:
   safety net behind the prompt, not a replacement for it.
 - **The form wins.** Once the student has checked eligibility, the chat sends
   that exact profile, and it overrides whatever the model passes.
+- **Made-up scheme ids are rejected.** The model kept turning "Central Sector
+  Scheme" into ids like `CSSS`. The search tool now refuses unknown ids and
+  returns the valid list, instead of quietly searching everything.
+- **Document answers stay close to the documents.** Search results go back to
+  the model with a "use only these texts" rule attached, and the model runs at
+  temperature 0. This reduces, but can't fully prevent, the model adding things
+  from general knowledge.
 - **Inputs are validated.** Both API routes, and the model's tool arguments,
   go through the same `zod` schema (`lib/validate.js`): `"4"` becomes `4`,
   `"up"` becomes `UP`, nonsense gets a 400 with the field named.
@@ -140,8 +148,8 @@ Tests are separate from the eval:
 
 | Command | What it checks | Needs |
 |---|---|---|
-| `npm run test:unit` | Eligibility rules on `schemes.json`, input validation, the invented-field guard (13 tests) | Nothing |
-| `npm test` | The above plus 11 end-to-end tests through MongoDB: rules, retrieval fallbacks, chunking | MongoDB with ingested data |
+| `npm run test:unit` | Eligibility rules on `schemes.json`, input validation, the invented-field guard, unknown-id rejection (15 tests) | Nothing |
+| `npm test` | The above plus 11 end-to-end tests through MongoDB: rules, retrieval, unknown-id rejection, chunking | MongoDB with ingested data |
 | `npm run agent-check` | Asks the real agent the question that exposed the invented-marks bug and fails if any unstated detail reaches the eligibility check | LLM key + MongoDB (costs a few calls) |
 
 ---

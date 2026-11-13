@@ -98,7 +98,7 @@ both blocks in your README.
 ### Test
 
 ```bash
-npm run test:unit     # 13 tests, no database or LLM needed
+npm run test:unit     # 15 tests, no database or LLM needed
 npm test              # those + 11 end-to-end tests through MongoDB (run ingest first)
 npm run agent-check   # optional: replays a tricky question against the real LLM
 ```
