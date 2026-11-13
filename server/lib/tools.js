@@ -11,31 +11,46 @@ export const toolSchemas = [
     function: {
       name: "check_eligibility",
       description:
-        "Find which scholarship schemes a student qualifies for. Call this first whenever the student describes their situation. Returns eligible schemes and, separately, near-misses with the exact reason they failed.",
+        "Find which scholarship schemes a student qualifies for. Call this first whenever the student describes their situation. Only include fields the student actually stated; leave the rest out (never guess). Returns eligible schemes, 'possible' schemes that need a missing detail, and near-misses with the exact reason they failed.",
       parameters: {
         type: "object",
         properties: {
           income: {
             type: "number",
             description:
-              "Annual family income in rupees, e.g. 400000 for 4 lakh",
+              "Annual family income in rupees, e.g. 400000 for 4 lakh. Required.",
           },
           category: {
             type: "string",
             enum: ["GENERAL", "OBC", "SC", "ST", "EWS", "MINORITY"],
           },
-          state: { type: "string", description: "State of domicile, e.g. UP" },
+          state: {
+            type: "string",
+            description: "State of domicile as a code, e.g. UP. Only if the student stated it.",
+          },
           course_level: {
             type: "string",
             enum: ["UG", "PG", "DIPLOMA", "SCHOOL"],
+            description: "Only if the student stated it (B.Tech/B.A./B.Sc = UG).",
           },
-          year_of_study: { type: "number" },
-          gender: { type: "string", enum: ["MALE", "FEMALE", "OTHER"] },
+          year_of_study: {
+            type: "number",
+            description: "Only if the student stated it (final year of a 4-year course = 4).",
+          },
+          gender: {
+            type: "string",
+            enum: ["MALE", "FEMALE", "OTHER"],
+            description: "Only if the student stated it. Never guess.",
+          },
           marks_pct: {
             type: "number",
-            description: "Percentage in last qualifying exam",
+            description:
+              "Percentage in last qualifying exam. Only if the student stated it. Never guess.",
           },
-          disability: { type: "boolean" },
+          disability: {
+            type: "boolean",
+            description: "Only if the student stated it. Never guess.",
+          },
         },
         required: ["income", "category"],
       },
@@ -92,72 +107,110 @@ export const toolSchemas = [
 
 const inr = (n) => `Rs ${Number(n).toLocaleString("en-IN")}`;
 
+// Compare "up", " UP" and "Up" as the same value.
+const norm = (v) => String(v ?? "").trim().toUpperCase();
+const known = (v) => v !== undefined && v !== null && v !== "";
+
 /**
  * The core argument of this project lives here.
  *
  * Eligibility is a set of comparisons (income <= ceiling, category in list).
- * Embeddings cannot do comparisons — "income up to 2.5 lakh" and "income up to
- * 8 lakh" are ~0.95 cosine-similar. So this runs as a database predicate, and
- * vector search is reserved for the prose it cannot answer.
+ * Embeddings cannot do comparisons: "income up to 2.5 lakh" and "income up to
+ * 8 lakh" are almost identical vectors. So eligibility is checked with exact
+ * rules in code, and vector search is reserved for the prose it cannot answer.
+ *
+ * Every rule ends in one of three states:
+ *   pass       the student's value satisfies it
+ *   fail       the student's value breaks it        -> goes into `fails`
+ *   unchecked  the student didn't give that value   -> goes into `unchecked`
+ * An unknown value is never treated as a pass. That used to hide rules such
+ * as "80% marks minimum" when the student hadn't mentioned marks.
  */
-export async function check_eligibility(profile) {
-  const col = await schemes();
-  const all = await col.find({}, { projection: { _id: 0 } }).toArray();
+export function checkScheme(s, profile) {
+  const e = s.eligibility || {};
+  const fails = [];
+  const unchecked = [];
 
-  const eligible = [];
-  const nearMiss = [];
-
-  for (const s of all) {
-    const e = s.eligibility || {};
-    const fails = [];
-
-    if (e.income_max != null && profile.income > e.income_max) {
+  if (e.income_max != null) {
+    if (!known(profile.income)) {
+      unchecked.push(`income: ceiling is ${inr(e.income_max)}`);
+    } else if (Number(profile.income) > e.income_max) {
       fails.push(
         `income ceiling is ${inr(e.income_max)}, you reported ${inr(profile.income)}`,
       );
     }
-    if (e.categories?.length && !e.categories.includes("ALL")) {
-      if (!e.categories.includes(profile.category)) {
-        fails.push(`open to ${e.categories.join("/")} only`);
-      }
+  }
+
+  const cats = (e.categories || []).map(norm);
+  if (cats.length && !cats.includes("ALL")) {
+    if (!known(profile.category)) {
+      unchecked.push(`category: open to ${e.categories.join("/")} only`);
+    } else if (!cats.includes(norm(profile.category))) {
+      fails.push(`open to ${e.categories.join("/")} only`);
     }
-    if (
-      s.state &&
-      s.state !== "ALL" &&
-      profile.state &&
-      s.state !== profile.state
-    ) {
+  }
+
+  if (s.state && norm(s.state) !== "ALL") {
+    if (!known(profile.state)) {
+      unchecked.push(`state: restricted to ${s.state} domicile`);
+    } else if (norm(s.state) !== norm(profile.state)) {
       fails.push(`restricted to ${s.state} domicile`);
     }
-    if (e.course_levels?.length && profile.course_level) {
-      if (!e.course_levels.includes(profile.course_level)) {
-        fails.push(`for ${e.course_levels.join("/")} students`);
-      }
+  }
+
+  if (e.course_levels?.length) {
+    if (!known(profile.course_level)) {
+      unchecked.push(`course_level: for ${e.course_levels.join("/")} students`);
+    } else if (!e.course_levels.map(norm).includes(norm(profile.course_level))) {
+      fails.push(`for ${e.course_levels.join("/")} students`);
     }
-    if (e.year_of_study?.length && profile.year_of_study) {
-      if (!e.year_of_study.includes(profile.year_of_study)) {
-        fails.push(`for year ${e.year_of_study.join(", ")} students`);
-      }
+  }
+
+  if (e.year_of_study?.length) {
+    if (!known(profile.year_of_study)) {
+      unchecked.push(`year_of_study: for year ${e.year_of_study.join(", ")} students`);
+    } else if (!e.year_of_study.map(Number).includes(Number(profile.year_of_study))) {
+      fails.push(`for year ${e.year_of_study.join(", ")} students`);
     }
-    if (
-      e.gender &&
-      e.gender !== "ALL" &&
-      profile.gender &&
-      e.gender !== profile.gender
-    ) {
+  }
+
+  if (e.gender && norm(e.gender) !== "ALL") {
+    if (!known(profile.gender)) {
+      unchecked.push(`gender: for ${e.gender.toLowerCase()} applicants`);
+    } else if (norm(e.gender) !== norm(profile.gender)) {
       fails.push(`for ${e.gender.toLowerCase()} applicants`);
     }
-    if (e.min_marks_pct != null && profile.marks_pct != null) {
-      if (profile.marks_pct < e.min_marks_pct) {
-        fails.push(
-          `needs ${e.min_marks_pct}% minimum, you reported ${profile.marks_pct}%`,
-        );
-      }
+  }
+
+  if (e.min_marks_pct != null) {
+    if (!known(profile.marks_pct)) {
+      unchecked.push(`marks_pct: needs ${e.min_marks_pct}% minimum`);
+    } else if (Number(profile.marks_pct) < e.min_marks_pct) {
+      fails.push(
+        `needs ${e.min_marks_pct}% minimum, you reported ${profile.marks_pct}%`,
+      );
     }
-    if (e.requires_disability && !profile.disability) {
+  }
+
+  if (e.requires_disability) {
+    if (!known(profile.disability)) {
+      unchecked.push("disability: for students with a certified disability");
+    } else if (!profile.disability) {
       fails.push("for students with a certified disability");
     }
+  }
 
+  return { fails, unchecked };
+}
+
+/** Pure function (no database), so tests can run it on schemes.json directly. */
+export function evaluateSchemes(all, profile) {
+  const eligible = []; // every rule checked and passed
+  const possible = []; // nothing failed, but some rules couldn't be checked
+  const nearMiss = []; // exactly one rule failed
+
+  for (const s of all) {
+    const { fails, unchecked } = checkScheme(s, profile);
     const row = {
       id: s.id,
       name: s.name,
@@ -166,22 +219,42 @@ export async function check_eligibility(profile) {
       deadline: s.deadline,
       apply_url: s.apply_url,
       verified: s.verified === true,
+      unchecked,
     };
 
-    if (fails.length === 0) eligible.push(row);
+    if (fails.length === 0 && unchecked.length === 0) eligible.push(row);
+    else if (fails.length === 0) possible.push(row);
     else if (fails.length === 1) nearMiss.push({ ...row, reason: fails[0] });
+    // 2+ failed rules: not shown
   }
 
-  // Soonest deadline first — a scholarship you find after it closes is useless.
-  eligible.sort((a, b) => String(a.deadline).localeCompare(String(b.deadline)));
+  // Soonest deadline first: a scholarship you find after it closes is useless.
+  const byDeadline = (a, b) => String(a.deadline).localeCompare(String(b.deadline));
+  eligible.sort(byDeadline);
+  possible.sort(byDeadline);
+
+  // Which missing details would settle the "possible" schemes.
+  const missing_fields = [
+    ...new Set(possible.flatMap((r) => r.unchecked.map((u) => u.split(":")[0]))),
+  ];
 
   return {
     profile_used: profile,
     eligible_count: eligible.length,
     eligible,
+    possible,
     near_misses: nearMiss,
-    note: "Eligibility computed from structured fields, not from text similarity.",
+    missing_fields,
+    note:
+      "Eligibility computed from structured fields, not from text similarity. " +
+      "'possible' schemes passed every rule that could be checked; ask the student for missing_fields before confirming them.",
   };
+}
+
+export async function check_eligibility(profile) {
+  const col = await schemes();
+  const all = await col.find({}, { projection: { _id: 0 } }).toArray();
+  return evaluateSchemes(all, profile);
 }
 
 export async function search_scheme_docs({ query, scheme_ids, section }) {
