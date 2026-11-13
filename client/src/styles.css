@@ -452,6 +452,15 @@ a {
   );
 }
 
+.bar__fill--orange {
+  background-color: var(--orange);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.35) 0 3px,
+    transparent 3px 7px
+  );
+}
+
 .bar__fill--pink {
   background-color: var(--pink);
   background-image: repeating-linear-gradient(
@@ -837,4 +846,62 @@ a {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ── Added: "might qualify" cards, unchecked rules, markdown, trace args ── */
+.scheme--possible {
+  background: #fffaf0;
+  box-shadow: none;
+  border: 1px dashed #f3c97a;
+}
+
+.scheme__unchecked {
+  margin: 4px 0 6px;
+  padding-left: 18px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.scheme__hint {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.bubble--md {
+  white-space: normal;
+}
+
+.bubble--md p {
+  margin: 0 0 8px;
+}
+
+.bubble--md p:last-child {
+  margin-bottom: 0;
+}
+
+.bubble--md ul,
+.bubble--md ol {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.bubble--md a {
+  color: var(--blue);
+}
+
+.trace__args {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink-soft);
+}
+
+.trace__dropped {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #92400e;
 }
