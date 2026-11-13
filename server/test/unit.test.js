@@ -9,7 +9,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { evaluateSchemes } from "../lib/tools.js";
+import { evaluateSchemes, assertKnownIds } from "../lib/tools.js";
 import { ProfileSchema, ChatSchema } from "../lib/validate.js";
 import { prepareEligibilityArgs } from "../lib/agent.js";
 
@@ -130,4 +130,20 @@ test("form values win over the model's arguments", () => {
   const form = { ...btech, gender: "MALE", marks_pct: 85, disability: false };
   const { args } = prepareEligibilityArgs({ ...btech, marks_pct: 75 }, question, form);
   assert.equal(args.marks_pct, 85);
+});
+
+/* ---------------------------------------------------------------- */
+/* Made-up scheme ids are rejected, not silently searched around      */
+/* ---------------------------------------------------------------- */
+
+test("a made-up scheme id is rejected with the valid list", () => {
+  assert.throws(
+    () => assertKnownIds(["CSSS"], all),
+    (err) => /Unknown scheme_ids: CSSS/.test(err.message) && /css-ug \(Central Sector/.test(err.message),
+  );
+});
+
+test("real scheme ids pass, and no ids at all is fine", () => {
+  assert.doesNotThrow(() => assertKnownIds(["css-ug", "pms-obc"], all));
+  assert.doesNotThrow(() => assertKnownIds(undefined, all));
 });

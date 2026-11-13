@@ -103,6 +103,7 @@ export async function runAgent(userMessage, history = [], formProfile = null) {
       model: config.llmModel,
       messages,
       tools: toolSchemas,
+      temperature: 0, // least "creative": stick to what the tools returned
     });
 
     const msg = res.choices[0].message;
@@ -144,11 +145,20 @@ export async function runAgent(userMessage, history = [], formProfile = null) {
         summary: summarise(call.function.name, result),
       });
 
-      messages.push({
-        role: "tool",
-        tool_call_id: call.id,
-        content: JSON.stringify(result),
-      });
+      // Document text goes back with the grounding rule right beside it:
+      // models follow an instruction next to the data more reliably than one
+      // at the top of a long system prompt.
+      const content =
+        call.function.name === "search_scheme_docs" && Array.isArray(result)
+          ? JSON.stringify({
+              chunks: result,
+              answer_rule:
+                "Answer only from these texts. List exactly what they say, in their words. " +
+                "Add nothing from general knowledge (no extra documents, authorities, formats or eligibility rules).",
+            })
+          : JSON.stringify(result);
+
+      messages.push({ role: "tool", tool_call_id: call.id, content });
     }
   }
 

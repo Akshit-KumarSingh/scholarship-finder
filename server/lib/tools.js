@@ -61,7 +61,7 @@ export const toolSchemas = [
     function: {
       name: "search_scheme_docs",
       description:
-        "Search the text of scheme documents for things eligibility fields cannot answer: documents required, application and renewal process, how family income is defined, what happens on a repeat year. Scope to scheme_ids whenever you already know which schemes matter.",
+        "Search the text of scheme documents for things eligibility fields cannot answer: documents required, application and renewal process, how family income is defined, what happens on a repeat year. Scope to scheme_ids whenever you already know which schemes matter. scheme_ids must be exact ids such as css-ug; unknown ids are rejected.",
       parameters: {
         type: "object",
         properties: {
@@ -257,17 +257,46 @@ export async function check_eligibility(profile) {
   return evaluateSchemes(all, profile);
 }
 
+/*
+ * The model sometimes invents scheme ids ("CSSS" for css-ug). Silently widening
+ * the search hid that mistake, so unknown ids are now rejected with the full
+ * list of valid ids and names. The agent loop passes the error back to the
+ * model, which then retries with a real id.
+ */
+let knownSchemes; // [{id, name}], loaded once per process
+async function getKnownSchemes() {
+  if (!knownSchemes) {
+    const col = await schemes();
+    knownSchemes = await col
+      .find({}, { projection: { _id: 0, id: 1, name: 1 } })
+      .toArray();
+  }
+  return knownSchemes;
+}
+
+/** Pure function: throws if any id is not a real scheme id. */
+export function assertKnownIds(ids, known) {
+  if (!ids?.length) return;
+  const valid = new Set(known.map((s) => s.id));
+  const unknown = ids.filter((id) => !valid.has(id));
+  if (unknown.length) {
+    const list = known.map((s) => `${s.id} (${s.name})`).join("; ");
+    throw new Error(
+      `Unknown scheme_ids: ${unknown.join(", ")}. Use only these ids: ${list}`,
+    );
+  }
+}
+
 export async function search_scheme_docs({ query, scheme_ids, section }) {
+  assertKnownIds(scheme_ids, await getKnownSchemes());
+
   const [qVec] = await embed([query]);
   let hits = await vectorSearch(qVec, { schemeIds: scheme_ids, section, k: 8 });
 
-  // A filter that matches nothing is worse than no filter — the model may have
-  // guessed an id that doesn't exist. Widen the search rather than return empty.
-  if (hits.length === 0 && scheme_ids?.length) {
-    hits = await vectorSearch(qVec, { section, k: 8 });
-  }
+  // A real scheme can still have nothing in the requested section.
+  // Then widen to all sections of the same schemes rather than return empty.
   if (hits.length === 0 && section) {
-    hits = await vectorSearch(qVec, { k: 8 });
+    hits = await vectorSearch(qVec, { schemeIds: scheme_ids, k: 8 });
   }
 
   return hits.map((h) => ({
@@ -280,6 +309,7 @@ export async function search_scheme_docs({ query, scheme_ids, section }) {
 }
 
 export async function compare_schemes({ scheme_ids }) {
+  assertKnownIds(scheme_ids, await getKnownSchemes());
   const col = await schemes();
   const rows = await col
     .find(
