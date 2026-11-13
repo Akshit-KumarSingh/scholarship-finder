@@ -80,9 +80,9 @@ npm run ingest
 Should print something like:
 
 ```
-schemes: 10 inserted
-chunks: 40 to embed (384 dims)
-  embedded 40/40
+schemes: 15 inserted
+chunks: 60 to embed (384 dims)
+  embedded 60/60
 ```
 
 ### Measure
@@ -94,6 +94,17 @@ npm run eval
 You'll get precision and recall for the structured filter, plus the naive-RAG
 baseline showing how often plain semantic search returns a barred scheme. Put
 both blocks in your README.
+
+### Test
+
+```bash
+npm run test:unit     # 15 tests, no database or LLM needed
+npm test              # those + 11 end-to-end tests through MongoDB (run ingest first)
+npm run agent-check   # optional: replays a tricky question against the real LLM
+```
+
+`agent-check` costs a few LLM calls and LLM output varies, so run it about three
+times before trusting a pass.
 
 ### Run it
 
@@ -185,13 +196,14 @@ node scripts/extract.js ./pdfs/up-postmatric.pdf up-postmatric
 
 It writes `data/draft-up-postmatric.json` and prints the fields to check.
 
-**Verify all twelve by hand against the PDF.** Ten schemes × twelve fields = 120
-values. It's boring and takes an afternoon and there's no clever way around it.
+**Verify all twelve by hand against the PDF.** Fifteen schemes × twelve fields
+= 180 values. It's boring and takes an afternoon and there's no clever way around it.
 Then paste the record into `data/schemes.json`, set `verified: true`, and
 re-run `npm run ingest`.
 
-Hard cap at ten schemes. The eval numbers are what matter, not corpus size, and
-this is the stage where projects quietly die from tedium.
+Don't add more schemes until these fifteen are verified. The eval numbers are
+what matter, not corpus size, and this is the stage where projects quietly die
+from tedium.
 
 ---
 
@@ -217,8 +229,11 @@ Vite. Set `VITE_API_URL` to your Render URL.
 | `Missing in .env` on startup | `MONGODB_URI` or `LLM_API_KEY` not set |
 | `MongoServerError: bad auth` | Password not URL-encoded, or `<password>` placeholder left in |
 | Connection hangs | IP not whitelisted in Network Access |
-| `Expected 384-dim vectors, got 1536` | `EMBED_PROVIDER` changed without re-running `npm run ingest` |
+| Chat scores show `null`, or results look random, after changing `EMBED_PROVIDER` | Stored vectors are from the old model. Re-run `npm run ingest`, and in Atlas set `numDimensions` to match (384 local, 1536 OpenAI) |
+| `Expected 384-dim vectors, got …` | The embedding model in `embed.js` was changed to one with a different size than `EMBED_DIMS` in `config.js` |
 | Atlas returns nothing | Index not Active yet, or name doesn't match `ATLAS_VECTOR_INDEX` |
 | Filter appears ignored | `filter` path not declared in the index JSON |
-| 429 from the LLM | Free tier rate limit. Increase the delay in `scripts/ingest.js` |
+| 429 from the LLM | Free-tier rate limit on the agent's LLM calls. Wait a minute between questions. (`ingest.js` never calls the LLM; its pause only matters for OpenAI embeddings) |
+| 400 from `/api/eligibility` or `/api/chat` | Input failed validation; the error message names the field |
+| `EMBED_PROVIDER=openai` fails with an auth error | Set `OPENAI_API_KEY` in `.env` (separate from `LLM_API_KEY`) |
 | Empty text from a PDF | Scanned image, no text layer. Skip that scheme |

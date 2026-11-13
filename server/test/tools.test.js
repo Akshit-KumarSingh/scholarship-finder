@@ -111,14 +111,14 @@ test("search returns chunks for a real scheme id", async () => {
   assert.ok(r.length > 0, "search returned nothing for a scheme that exists");
 });
 
-test("search survives an invented scheme id", async () => {
-  const r = await search_scheme_docs({
-    query: "documents required",
-    scheme_ids: ["this-id-does-not-exist"],
-  });
-  assert.ok(
-    r.length > 0,
-    "a filter matching nothing should widen, not return empty",
+test("an invented scheme id is rejected with the list of real ids", async () => {
+  await assert.rejects(
+    search_scheme_docs({
+      query: "documents required",
+      scheme_ids: ["this-id-does-not-exist"],
+    }),
+    (err) => /Unknown scheme_ids/.test(err.message) && /css-ug/.test(err.message),
+    "the model must be told the id is wrong and given the valid ones",
   );
 });
 

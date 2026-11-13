@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { checkEligibility, sendChat } from "./api.js";
+import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import { checkEligibility, sendChat, wakeServer } from "./api.js";
 
 const BLANK = {
   income: "",
@@ -18,6 +19,22 @@ const inr = (n) =>
     currency: "INR",
     maximumFractionDigits: 0,
   });
+
+// "marks_pct: needs 80% minimum" -> "Marks: needs 80% minimum"
+const FIELD_LABEL = {
+  income: "Income",
+  category: "Category",
+  state: "State",
+  course_level: "Course",
+  year_of_study: "Year",
+  gender: "Gender",
+  marks_pct: "Marks",
+  disability: "Disability",
+};
+const describeUnchecked = (u) => {
+  const [field, ...rest] = u.split(":");
+  return `${FIELD_LABEL[field] ?? field}:${rest.join(":")}`;
+};
 
 const prettyDate = (d) => {
   if (!d) return "no deadline listed";
@@ -113,6 +130,11 @@ export default function App() {
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState(null);
 
+  // Wake a sleeping free-tier server while the student fills in the form.
+  useEffect(() => {
+    wakeServer();
+  }, []);
+
   const set = (k) => (e) =>
     setForm((f) => ({
       ...f,
@@ -161,7 +183,8 @@ export default function App() {
     setError(null);
 
     try {
-      const res = await sendChat(text, history);
+      // Once the form has been checked, the agent gets exactly those details.
+      const res = await sendChat(text, history, verdict?.profile_used ?? null);
       setMessages((m) =>
         m.map((msg, i) =>
           i === m.length - 1
@@ -184,16 +207,18 @@ export default function App() {
 
   // ── Numbers for the summary cards ─────────────────────────────────────────
   const eligibleCount = verdict?.eligible_count ?? 0;
+  const possibleCount = verdict?.possible?.length ?? 0;
   const nearCount = verdict?.near_misses?.length ?? 0;
-  const checked = eligibleCount + nearCount;
+  const checked = eligibleCount + possibleCount + nearCount;
   const verifiedCount = verdict
     ? verdict.eligible.filter((s) => s.verified).length
     : 0;
   const verifiedPct = eligibleCount
     ? Math.round((verifiedCount / eligibleCount) * 100)
     : 0;
+  // A small minimum keeps tiny counts visible, but 0 must draw no bar at all.
   const pct = (n) =>
-    checked ? Math.max(4, Math.round((n / checked) * 100)) : 0;
+    checked && n ? Math.max(4, Math.round((n / checked) * 100)) : 0;
 
   return (
     <div className="shell">
@@ -230,12 +255,14 @@ export default function App() {
           </div>
           {verdict && (
             <div className="chips">
-              <span className="chip">{form.state || "Any state"}</span>
-              <span className="chip">{form.category}</span>
+              {/* what the server actually checked (cleaned up, e.g. "up" -> "UP") */}
+              <span className="chip">{verdict.profile_used.state || "Any state"}</span>
+              <span className="chip">{verdict.profile_used.category}</span>
               <span className="chip">
-                {form.course_level} · Year {form.year_of_study}
+                {verdict.profile_used.course_level} · Year{" "}
+                {verdict.profile_used.year_of_study}
               </span>
-              {form.income && <span className="chip">{inr(form.income)}</span>}
+              <span className="chip">{inr(verdict.profile_used.income)}</span>
             </div>
           )}
         </div>
@@ -352,7 +379,7 @@ export default function App() {
                 <span className="bignum__value">
                   {verdict ? eligibleCount : "–"}
                 </span>
-                {verdict && checked > 0 && (
+                {verdict && eligibleCount > 0 && (
                   <span className="pill-badge">
                     <span className="pill-badge__dot" /> {pct(eligibleCount)}%
                     match
@@ -370,6 +397,18 @@ export default function App() {
                     <div
                       className="bar__fill bar__fill--green"
                       style={{ width: `${pct(eligibleCount)}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="bar">
+                  <div className="bar__label">
+                    <span>Might qualify, one detail missing</span>
+                    <strong>{possibleCount}</strong>
+                  </div>
+                  <div className="bar__track">
+                    <div
+                      className="bar__fill bar__fill--orange"
+                      style={{ width: `${pct(possibleCount)}%` }}
                     />
                   </div>
                 </div>
@@ -428,10 +467,10 @@ export default function App() {
             <div className="card empty">
               <h2>Start with your details</h2>
               <p>
-                Eligibility is decided by comparing numbers, so it runs as a
-                database query rather than a text search. Once you have your
-                list, ask follow-up questions and the documents get searched for
-                the answer.
+                Eligibility is decided by comparing numbers, so it runs as exact
+                rule checks rather than a text search. Once you have your list,
+                ask follow-up questions and the documents get searched for the
+                answer.
               </p>
             </div>
           )}
@@ -440,7 +479,9 @@ export default function App() {
             <>
               <h2 className="section-title">
                 {eligibleCount === 0
-                  ? "Nothing matches these details"
+                  ? possibleCount > 0
+                    ? "No confirmed match yet"
+                    : "Nothing matches these details"
                   : `${eligibleCount} scheme${eligibleCount > 1 ? "s" : ""} will accept you`}
               </h2>
 
@@ -489,6 +530,29 @@ export default function App() {
                 ))}
               </div>
 
+              {possibleCount > 0 && (
+                <>
+                  <h2 className="section-title section-title--sub">
+                    You might qualify: we need one more detail
+                  </h2>
+                  <div className="grid grid--cards">
+                    {verdict.possible.map((s) => (
+                      <article key={s.id} className="card scheme scheme--possible">
+                        <h3>{s.name}</h3>
+                        <ul className="scheme__unchecked">
+                          {s.unchecked.map((u) => (
+                            <li key={u}>{describeUnchecked(u)}</li>
+                          ))}
+                        </ul>
+                        <p className="scheme__hint">
+                          Fill this in above and check again.
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                </>
+              )}
+
               {verdict.near_misses.length > 0 && (
                 <>
                   <h2 className="section-title section-title--sub">
@@ -499,6 +563,12 @@ export default function App() {
                       <article key={s.id} className="card scheme scheme--near">
                         <h3>{s.name}</h3>
                         <p className="scheme__reason">{s.reason}</p>
+                        {s.unchecked?.length > 0 && (
+                          <p className="scheme__hint">
+                            Also not checked:{" "}
+                            {s.unchecked.map(describeUnchecked).join("; ")}
+                          </p>
+                        )}
                       </article>
                     ))}
                   </div>
@@ -517,7 +587,17 @@ export default function App() {
                   <p className="bubble bubble--q">{m.question}</p>
                   {m.answer ? (
                     <>
-                      <div className="bubble bubble--a">{m.answer}</div>
+                      <div className="bubble bubble--a bubble--md">
+                        <ReactMarkdown
+                          components={{
+                            a: (props) => (
+                              <a {...props} target="_blank" rel="noreferrer" />
+                            ),
+                          }}
+                        >
+                          {m.answer}
+                        </ReactMarkdown>
+                      </div>
                       {m.trace?.length > 0 && (
                         <details className="trace">
                           <summary>{m.trace.length} tool calls</summary>
@@ -526,6 +606,15 @@ export default function App() {
                               <li key={j}>
                                 <code>{t.tool}</code>
                                 <span>{t.summary}</span>
+                                <pre className="trace__args">
+                                  {JSON.stringify(t.args)}
+                                </pre>
+                                {t.dropped?.length > 0 && (
+                                  <span className="trace__dropped">
+                                    Removed details you never gave:{" "}
+                                    {t.dropped.join(", ")}
+                                  </span>
+                                )}
                               </li>
                             ))}
                           </ol>

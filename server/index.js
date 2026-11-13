@@ -4,6 +4,7 @@ import { config, assertConfig } from "./lib/config.js";
 import { runAgent } from "./lib/agent.js";
 import { check_eligibility } from "./lib/tools.js";
 import { schemes } from "./lib/db.js";
+import { ProfileSchema, ChatSchema, describeError } from "./lib/validate.js";
 
 assertConfig();
 
@@ -33,24 +34,30 @@ app.get("/api/schemes", async (_req, res, next) => {
   }
 });
 
-// Direct filter, no LLM. Useful for the profile form, and for debugging:
+// Direct filter, no LLM. Used by the profile form, and for debugging:
 // if this is wrong, the agent has no chance.
 app.post("/api/eligibility", async (req, res, next) => {
+  const parsed = ProfileSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: describeError(parsed.error) });
+  }
   try {
-    res.json(await check_eligibility(req.body));
+    res.json(await check_eligibility(parsed.data));
   } catch (e) {
     next(e);
   }
 });
 
+// `profile` is optional: the form sends it once the student has checked
+// eligibility, so the agent works from what they actually entered.
 app.post("/api/chat", async (req, res, next) => {
+  const parsed = ChatSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: describeError(parsed.error) });
+  }
   try {
-    const { message, history = [] } = req.body;
-    if (!message?.trim()) {
-      return res.status(400).json({ error: "message is required" });
-    }
-    const result = await runAgent(message, history);
-    res.json(result);
+    const { message, history, profile } = parsed.data;
+    res.json(await runAgent(message, history, profile ?? null));
   } catch (e) {
     next(e);
   }
