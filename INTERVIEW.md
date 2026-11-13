@@ -22,10 +22,10 @@ are different operations. `income <= 250000` is a boolean evaluated against a
 value, and vector search has no evaluation step at all — it ranks by closeness
 and returns the top k. Nothing ever asks "is this true?"
 
-Follow up with: you could hand all ten schemes to the LLM and ask it to judge,
+Follow up with: you could hand all fifteen schemes to the LLM and ask it to judge,
 and it would mostly work. "Mostly" is the problem — it'll misread a figure
 occasionally and you'd have no way to know which answer was wrong. A MongoDB
-predicate is right every time, costs nothing, and is auditable.
+rule in code is right every time, costs nothing, and is auditable.
 
 ## "How did you choose your chunk size?"
 
@@ -63,8 +63,8 @@ before any of it, because at that scale you can't eyeball results.
 
 ## "What's the weakest part?"
 
-Answer honestly — it reads better than a deflection. Ten schemes is a small
-corpus. The eligibility model simplifies real rules (institution type, admission
+Answer honestly — it reads better than a deflection. Fifteen schemes is a small
+corpus, and the figures are placeholders until verified against the PDFs. The eligibility model simplifies real rules (institution type, admission
 route, one-scholarship-at-a-time conditions aren't captured). No reranking yet.
 Then say what you'd do next and why.
 
@@ -79,7 +79,24 @@ flagged in the interface rather than presented as fact.
 
 "Naive retrieval returned schemes the student was legally barred from, because
 embeddings can't compare numbers. I moved eligibility into structured MongoDB
-fields, pre-filtered on those, and ran vector search only over what survived.
-On my eval set that took X to Y."
+fields checked by exact rules, and the agent searches documents only for the
+schemes that pass. On my 15-profile eval set, plain retrieval put a barred
+scheme in front of the student in 89.3% of results; the structured check
+showed none, with recall at 100%."
 
 That's a systems answer, not a tutorial answer.
+
+## "What broke when you tested it for real?"
+
+Testing the deployed site, I asked about a final-year B.Tech student who gave
+no marks. The model called `check_eligibility` with `marks_pct: 75` that it
+invented, so my exact rules correctly rejected a number nobody had entered, and
+the student was told "you reported 75%". The lesson: exact rules are only as
+good as their inputs, and the LLM fills in the inputs.
+
+What I changed: unknown details are never treated as a pass (those schemes go
+into a "possible, need X" group), invented marks/gender/disability are stripped
+before the rules run unless the student mentioned them, the form's profile
+overrides the model's arguments, and both the API and the tool arguments go
+through one validation schema. There's a unit test for each, and an
+`agent-check` script that replays the original question against the real model.

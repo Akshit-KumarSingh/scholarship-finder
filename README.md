@@ -37,11 +37,13 @@ So this project splits the problem:
 
 | Question type | Handled by | Why |
 |---|---|---|
-| Do I qualify? | MongoDB predicates on structured fields | Comparisons must be exact and auditable |
+| Do I qualify? | Exact rule checks in code, over structured fields stored in MongoDB | Comparisons must be exact and auditable |
 | What documents do I need? How is income defined? What if I repeat a year? | Vector search over document prose | No filter can answer these |
 
-Structured filtering decides **who is eligible**. Semantic search does the
-**explaining**, scoped only to schemes that survived the filter.
+Structured rules decide **who is eligible**. Semantic search does the
+**explaining**. The agent is told to scope that search to the schemes the
+eligibility check returned; that is an instruction in the prompt, not something
+the code forces, so the search tool also widens its filter if a scheme id is wrong.
 
 ---
 
@@ -56,12 +58,12 @@ student message
   LLM with three tools ──────────────────────────────┐
       │                                              │
       ├─ check_eligibility(profile)                  │
-      │     MongoDB predicates: income <= ceiling,    │ model decides
+      │     rules in code: income <= ceiling,         │ model decides
       │     category in list, domicile, marks floor   │ which to call,
-      │     → eligible[] + near_misses[] with reasons │ in what order,
+      │     → eligible[] + possible[] + near_misses[] │ in what order,
       │                                              │ how many rounds
       ├─ search_scheme_docs(query, scheme_ids, section)
-      │     $vectorSearch pre-filtered to those schemes
+      │     $vectorSearch, filtered by scheme_ids/section
       │                                              │
       └─ compare_schemes(scheme_ids)                 │
             structured lookup: amount, deadline, link │
@@ -69,6 +71,27 @@ student message
       ▼ ◄────────────────────────────────────────────┘
   grounded answer + tool trace
 ```
+
+### What the LLM is trusted with, and what it isn't
+
+Testing the live site exposed a real failure: asked about a student who gave
+no marks, the model called `check_eligibility` with `marks_pct: 75` that it
+made up, and the exact rules then correctly rejected a number nobody entered.
+Exact rules are only as good as their inputs, so the inputs are now guarded too:
+
+- **Unknown is never a pass.** If a scheme has a rule the student gave no data
+  for (no marks, no gender), the scheme goes into `possible` with an
+  `unchecked` list ("Marks: needs 80% minimum"), not into `eligible`.
+  `eligible` means every rule was checked.
+- **Invented details are removed.** Before `check_eligibility` runs, marks,
+  gender and disability are dropped unless the student's own messages mention
+  them. The trace shows what was removed. It's a keyword check, so it's a
+  safety net behind the prompt, not a replacement for it.
+- **The form wins.** Once the student has checked eligibility, the chat sends
+  that exact profile, and it overrides whatever the model passes.
+- **Inputs are validated.** Both API routes, and the model's tool arguments,
+  go through the same `zod` schema (`lib/validate.js`): `"4"` becomes `4`,
+  `"up"` becomes `UP`, nonsense gets a 400 with the field named.
 
 Ask *"I qualify for both — which pays more and which is easier to apply for?"*
 and the model calls eligibility once, then searches the benefits section for two
@@ -107,11 +130,20 @@ scholarship they cannot apply for.
 
 
 Plain retrieval put a scholarship the student cannot apply for in front of them
-in 89.3% of results. Structured pre-filtering brought that to zero without
-losing a single scheme the student did qualify for — recall stayed at 100%.
+in 89.3% of results. The structured check showed none, without losing a single
+scheme the student did qualify for — recall stayed at 100%.
 
-The eval also runs a correctness suite (`npm test`, 11 assertions) covering the
-eligibility predicates, retrieval fallbacks, and chunking.
+These are hand-written profiles on placeholder data: they show the code applies
+its rules correctly, not that the rules match the official documents.
+
+Tests are separate from the eval:
+
+| Command | What it checks | Needs |
+|---|---|---|
+| `npm run test:unit` | Eligibility rules on `schemes.json`, input validation, the invented-field guard (13 tests) | Nothing |
+| `npm test` | The above plus 11 end-to-end tests through MongoDB: rules, retrieval fallbacks, chunking | MongoDB with ingested data |
+| `npm run agent-check` | Asks the real agent the question that exposed the invented-marks bug and fails if any unstated detail reaches the eligibility check | LLM key + MongoDB (costs a few calls) |
+
 ---
 
 ## Stack
@@ -138,10 +170,11 @@ Full step-by-step in [SETUP.md](./SETUP.md). Short version:
 # 1. Server
 cd server
 npm install
-cp .env.example .env        # add MONGODB_URI and LLM_API_KEY
+cp .env.example .env        # fill in MONGODB_URI and LLM_API_KEY
 npm run similarity          # see why this architecture exists
 npm run ingest              # load schemes, chunk, embed, store
 npm run eval                # measure
+npm run test:unit           # rules + validation, no DB needed
 npm run dev                 # http://localhost:3000
 
 # 2. Client, in a second terminal
@@ -163,14 +196,17 @@ server/
     chunk.js      paragraph-aware, section-tagged chunking
     db.js         Mongo + both vector search backends
     tools.js      the three tools: schemas and implementations
-    agent.js      the tool-calling loop
+    validate.js   input checking for the API and the model's tool arguments
+    agent.js      the tool-calling loop + the invented-field guard
   scripts/
     similarity.js the day-one demo: embeddings can't compare numbers
     extract.js    LLM-assisted PDF → structured record (draft, needs verifying)
     ingest.js     chunk, embed, store
     eval.js       precision/recall + the naive-RAG baseline
+    agent-check.js  live check that the agent doesn't invent details
   data/schemes.json
   eval/profiles.json
+  test/unit.test.js, test/tools.test.js
   index.js
 client/
   src/App.jsx, api.js, styles.css
@@ -198,8 +234,12 @@ field, and the UI links to the official portal for the final word.
 
 ## Known limitations
 
-- Small corpus. Ten schemes is enough to demonstrate the filtering argument, not
-  enough to be a real product.
+- Small corpus. Fifteen schemes (60 chunks) is enough to demonstrate the
+  filtering argument, not enough to be a real product. With sections this
+  short, each section is a single chunk, so chunk overlap rarely comes into play.
+- The invented-field guard is a keyword check on the student's messages. It
+  stops the failure that was observed, but a model could still mis-read a
+  detail the student did mention.
 - Eligibility fields are a simplification. Real schemes have conditions
   (institution type, admission route, one-scholarship-at-a-time rules) that
   aren't modelled, which is why near-misses report a reason rather than a
