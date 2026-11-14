@@ -7,10 +7,14 @@
     "start": "node index.js",
     "similarity": "node scripts/similarity.js",
     "ingest": "node scripts/ingest.js",
+    "ingest:dev": "node scripts/ingest.js --allow-unverified",
     "extract": "node scripts/extract.js",
+    "review": "node scripts/review.js",
+    "report": "node scripts/report.js",
+    "finalize": "node scripts/finalize.js",
     "eval": "node scripts/eval.js",
     "test": "node --env-file=.env --test test/*.test.js",
-    "test:unit": "node --test test/unit.test.js",
+    "test:unit": "node --test test/unit.test.js test/verification.test.js",
     "agent-check": "node scripts/agent-check.js"
   },
   "dependencies": {

@@ -74,8 +74,13 @@ justification for the whole architecture. Screenshot it for your README.
 ### Load the data
 
 ```bash
-npm run ingest
+npm run ingest:dev
 ```
+
+`ingest:dev` loads the placeholder records too. Plain `npm run ingest` is the
+strict, production command: it refuses to load any scheme that hasn't been
+verified by a human (section 7), and changes nothing in the database when it
+refuses.
 
 Should print something like:
 
@@ -98,8 +103,8 @@ both blocks in your README.
 ### Test
 
 ```bash
-npm run test:unit     # 15 tests, no database or LLM needed
-npm test              # those + 11 end-to-end tests through MongoDB (run ingest first)
+npm run test:unit     # 34 tests, no database or LLM needed
+npm test              # those + 11 end-to-end tests through MongoDB (run ingest:dev first)
 npm run agent-check   # optional: replays a tricky question against the real LLM
 ```
 
@@ -185,21 +190,49 @@ That tradeoff is a good interview answer — know it.
 
 ---
 
-## 7. Adding real scheme data
+## 7. Adding real scheme data (extract → review → finalize → ingest)
+
+The LLM proposes every field **with the exact sentence and page it came from**.
+Code checks that evidence against the real PDF text. A human approves or
+corrects each field. Only then does the scheme become `verified: true`.
 
 ```bash
-mkdir server/pdfs
-# download the official scheme PDF into it, then:
 cd server
-node scripts/extract.js ./pdfs/up-postmatric.pdf up-postmatric
+# 1. Extract (PDF in server/pdfs/, which is git-ignored)
+npm run extract -- ./pdfs/up-postmatric.pdf up-postmatric --academic-year 2026-27 --source-url https://... --apply-url https://...
+
+# 2. Read the report: data/review/up-postmatric.md
+#    Every field: value | PDF page | exact supporting text | status.
+#    "Look at these first" lists wrong pages, quotes not found in the PDF,
+#    numbers that don't match their quote (the lakh slip), and pages that disagree.
+
+# 3. Review, one field at a time, with the PDF open next to you
+npm run review -- up-postmatric --by "Your Name"
+#    a = approve · c = correct (original kept for the audit trail) · n = confirm not in PDF · s = skip · q = save and quit
+
+# 4. Write the verified record into data/schemes.json
+npm run finalize -- up-postmatric        # refuses, listing what's left, until every field has a human decision
+
+# 5. Load it
+npm run ingest                           # strict: only verified schemes
 ```
 
-It writes `data/draft-up-postmatric.json` and prints the fields to check.
+What each status means:
 
-**Verify all twelve by hand against the PDF.** Fifteen schemes × twelve fields
-= 180 values. It's boring and takes an afternoon and there's no clever way around it.
-Then paste the record into `data/schemes.json`, set `verified: true`, and
-re-run `npm run ingest`.
+| Status | Set by | Meaning |
+|---|---|---|
+| `pending` | code | Quote found on the cited page and the value agrees with it. Still needs a human. |
+| `needs_review` | code | No quote, quote on another page, quote not in the PDF, number doesn't match, or pages disagree |
+| `not_found` | code, then human | The model says the PDF doesn't state it. A human must confirm (for an eligibility rule, "not stated" means "no restriction") |
+| `verified` | human | Approved as extracted |
+| `corrected` | human | Replaced; the model's value and evidence are kept beside it |
+
+Files in `data/review/` are the audit trail (who decided what, when, and why).
+Commit them. `npm run report -- <id>` re-creates the `.md` report from the JSON.
+
+Machine checks are never approval: a quote can be real and still be misread.
+Scanned pages (almost no text) are listed at the top of the report; check
+anything on them by eye.
 
 Don't add more schemes until these fifteen are verified. The eval numbers are
 what matter, not corpus size, and this is the stage where projects quietly die

@@ -1,9 +1,11 @@
 /**
- * npm run ingest
+ * npm run ingest        only human-verified schemes (verified: true); refuses otherwise
+ * npm run ingest:dev    development only: also loads unverified placeholder records
  *
  * Reads data/schemes.json, writes the structured records to `schemes`,
  * chunks the prose sections, embeds them, and writes to `chunks`.
- * Safe to re-run — it clears both collections first.
+ * Safe to re-run — it clears both collections first. The verification
+ * check runs BEFORE anything is deleted, so a refused run changes nothing.
  */
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -12,6 +14,7 @@ import { assertConfig, EMBED_DIMS } from "../lib/config.js";
 import { schemes, chunks, closeDb } from "../lib/db.js";
 import { chunkScheme } from "../lib/chunk.js";
 import { embed } from "../lib/embed.js";
+import { selectIngestable } from "../lib/verification.js";
 
 assertConfig();
 
@@ -19,7 +22,16 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const raw = JSON.parse(
   await fs.readFile(path.join(here, "../data/schemes.json"), "utf8")
 );
-const data = raw.filter((s) => !s.skip && s.id !== "_meta");
+const allowUnverified =
+  process.argv.includes("--allow-unverified") || process.env.INGEST_ALLOW_UNVERIFIED === "1";
+
+let data;
+try {
+  ({ records: data } = selectIngestable(raw, { allowUnverified }));
+} catch (err) {
+  console.error(`\n${err.message}\n\nNothing was changed in the database.\n`);
+  process.exit(1);
+}
 
 const schemeCol = await schemes();
 const chunkCol = await chunks();
@@ -30,11 +42,11 @@ await chunkCol.deleteMany({});
 await schemeCol.insertMany(data.map((s) => ({ ...s })));
 console.log(`schemes: ${data.length} inserted`);
 
-const unverified = data.filter((s) => !s.verified).length;
+const unverified = data.filter((s) => s.verified !== true).length;
 if (unverified) {
   console.log(
-    `\n  ${unverified} of ${data.length} schemes are marked verified:false.` +
-      `\n  Check each against its official PDF and flip the flag before you demo this.\n`
+    `\n  DEVELOPMENT MODE: ${unverified} of ${data.length} schemes are NOT human-verified.` +
+      `\n  Don't use this data for real students. Production ingestion is: npm run ingest\n`
   );
 }
 
@@ -51,7 +63,7 @@ for (let i = 0; i < allChunks.length; i += BATCH) {
   );
   done += batch.length;
   process.stdout.write(`\r  embedded ${done}/${allChunks.length}`);
-  // Free LLM tiers rate-limit. Harmless pause; delete if using local embeds.
+  // Only matters for EMBED_PROVIDER=openai (rate limits). Harmless locally.
   await new Promise((r) => setTimeout(r, 200));
 }
 

@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { config } from "./config.js";
-import { toolSchemas, toolImpls } from "./tools.js";
+import { toolSchemas, toolImpls, getKnownSchemes } from "./tools.js";
 import { ProfileSchema, describeError } from "./validate.js";
 
 // Created on first use, so tests can import this file without an API key.
@@ -8,7 +8,7 @@ let client;
 const llm = () =>
   (client ??= new OpenAI({ apiKey: config.llmApiKey, baseURL: config.llmBaseUrl }));
 
-const SYSTEM_PROMPT = `You help Indian students find government scholarships they qualify for.
+const PROMPT_TEMPLATE = `You help Indian students find government scholarships they qualify for.
 
 How to work:
 - When the student describes themselves, call check_eligibility first. Never judge eligibility yourself from document text — the tool compares the actual numbers.
@@ -28,23 +28,21 @@ How to answer:
 - If a scheme is marked verified:false, note that the figures need checking against the official portal.
 - Close by pointing to the official portal for the final word.
 
-Valid scheme_ids, with the scheme each one means (use the id, not the name, in tool calls):
-- pms-sc: Post Matric Scholarship for SC Students
-- pms-obc: Post Matric Scholarship for OBC Students
-- css-ug: Central Sector Scheme of Scholarship for College and University Students
-- aicte-pragati: AICTE Pragati Scholarship for Girl Students
-- aicte-saksham: AICTE Saksham Scholarship for Specially Abled Students
-- pm-yasasvi: PM YASASVI Scholarship for OBC, EBC and DNT Students
-- nmms: National Means cum Merit Scholarship
-- up-postmatric: UP Post Matric Scholarship (Other than Intermediate)
-- up-dashmottar: UP Dashmottar Scholarship for Minority Students
-- up-kanya-sumangala: Mukhyamantri Kanya Sumangala Yojana
-- pms-st: Post Matric Scholarship for ST Students
-- mcm-minority: Merit cum Means Scholarship for Professional and Technical Courses (Minority)
-- ishan-uday: Ishan Uday Special Scholarship for North Eastern Region
-- igp-single-girl: Indira Gandhi Scholarship for Single Girl Child (Postgraduate)
-- up-kanya-vidya-dhan: UP Kanya Vidya Dhan Yojana
-Never invent an id. If you are unsure which scheme the student means, call search_scheme_docs without scheme_ids.`;
+{{SCHEME_LIST}}`;
+
+/**
+ * The list of valid scheme ids comes from the database, not from a list typed
+ * into this file, so a newly verified and ingested scheme is known to the
+ * agent automatically (after the server restarts).
+ */
+export function buildSystemPrompt(known) {
+  const list = known.map((s) => `- ${s.id}: ${s.name}`).join("\n");
+  return PROMPT_TEMPLATE.replace(
+    "{{SCHEME_LIST}}",
+    `Valid scheme_ids, with the scheme each one means (use the id, not the name, in tool calls):\n${list}\n` +
+      "Never invent an id. If you are unsure which scheme the student means, call search_scheme_docs without scheme_ids.",
+  );
+}
 
 /*
  * Safety net for a bug seen on the live site: asked about a student who gave
@@ -79,7 +77,7 @@ export function prepareEligibilityArgs(args, statedText, formProfile) {
 }
 
 export async function runAgent(userMessage, history = [], formProfile = null) {
-  const messages = [{ role: "system", content: SYSTEM_PROMPT }];
+  const messages = [{ role: "system", content: buildSystemPrompt(await getKnownSchemes()) }];
   if (formProfile) {
     messages.push({
       role: "system",
