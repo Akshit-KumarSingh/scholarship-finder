@@ -80,8 +80,8 @@ flagged in the interface rather than presented as fact.
 "Naive retrieval returned schemes the student was legally barred from, because
 embeddings can't compare numbers. I moved eligibility into structured MongoDB
 fields checked by exact rules, and the agent searches documents only for the
-schemes that pass. On my 15-profile eval set, plain retrieval put a barred
-scheme in front of the student in 89.3% of results; the structured check
+schemes that pass. On my 16-profile eval set, plain retrieval put a barred
+scheme in front of the student in 91.3% of results; the structured check
 showed none, with recall at 100%."
 
 That's a systems answer, not a tutorial answer.

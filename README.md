@@ -122,6 +122,7 @@ profiles with known-correct answers:
 ```
 precision            100.0%
 recall               100.0%
+F1                   100.0%
 barred schemes shown 0
 ```
 
@@ -129,8 +130,8 @@ barred schemes shown 0
 semantic search over the eligibility text:
 
 ```
-schemes surfaced     75
-student not eligible 67 (89.3%)
+schemes surfaced     80
+student not eligible 73 (91.3%)
 ```
 
 That last percentage is how often plain RAG would have shown a student a
@@ -138,11 +139,16 @@ scholarship they cannot apply for.
 
 
 Plain retrieval put a scholarship the student cannot apply for in front of them
-in 89.3% of results. The structured check showed none, without losing a single
+in 91.3% of results. The structured check showed none, without losing a single
 scheme the student did qualify for — recall stayed at 100%.
 
-These are hand-written profiles on placeholder data: they show the code applies
-its rules correctly, not that the rules match the official documents.
+These are hand-written profiles. One scheme (css-ug, the PM-USP Central Sector
+Scheme) is verified against its official guidelines PDF, and its profiles (p1,
+p7, p8, p16) were rewritten to match the real rules: first-year only, and a
+Class XII board rank above the 80th percentile rather than a marks floor. The
+other fourteen schemes are still placeholder data, so for them the eval shows
+the code applies its rules correctly, not that the rules match the official
+documents.
 
 Tests are separate from the eval:
 
