@@ -14,8 +14,10 @@ import {
   check_eligibility,
   search_scheme_docs,
   compare_schemes,
+  getKnownSchemes,
 } from "../lib/tools.js";
 import { chunkText } from "../lib/chunk.js";
+import { buildSystemPrompt } from "../lib/agent.js";
 import { closeDb, schemes } from "../lib/db.js";
 
 after(async () => {
@@ -122,28 +124,14 @@ test("an invented scheme id is rejected with the list of real ids", async () => 
   );
 });
 
-test("every scheme id in the prompt exists in the database", async () => {
-  const promptIds = [
-    "pms-sc",
-    "pms-obc",
-    "pms-st",
-    "css-ug",
-    "aicte-pragati",
-    "aicte-saksham",
-    "pm-yasasvi",
-    "nmms",
-    "mcm-minority",
-    "ishan-uday",
-    "igp-single-girl",
-    "up-postmatric",
-    "up-dashmottar",
-    "up-kanya-sumangala",
-    "up-kanya-vidya-dhan",
-  ];
+test("the agent's prompt lists every scheme in the database", async () => {
+  const known = await getKnownSchemes();
+  const prompt = buildSystemPrompt(known);
   const col = await schemes();
-  const dbIds = await col.distinct("id");
-  const missing = promptIds.filter((id) => !dbIds.includes(id));
-  assert.deepEqual(missing, [], `ids in the system prompt but not in the db`);
+  const dbIds = (await col.find({}, { projection: { id: 1 } }).toArray()).map((s) => s.id);
+  assert.ok(dbIds.length > 0, "database is empty: run npm run ingest:dev first");
+  const missing = dbIds.filter((id) => !prompt.includes(`- ${id}: `));
+  assert.deepEqual(missing, [], "schemes in the database the agent doesn't know about");
 });
 
 test("compare_schemes returns the schemes asked for", async () => {

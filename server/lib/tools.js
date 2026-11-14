@@ -264,7 +264,7 @@ export async function check_eligibility(profile) {
  * model, which then retries with a real id.
  */
 let knownSchemes; // [{id, name}], loaded once per process
-async function getKnownSchemes() {
+export async function getKnownSchemes() {
   if (!knownSchemes) {
     const col = await schemes();
     knownSchemes = await col
