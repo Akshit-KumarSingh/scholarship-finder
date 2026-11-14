@@ -1,0 +1,500 @@
+{
+  "scheme_id": "css-ug",
+  "source_pdf": "css-ug.pdf",
+  "source_url": "https://scholarships.gov.in/public/schemeGuidelines/CSSS_GUIDLINES_06022024.pdf",
+  "apply_url": "https://scholarships.gov.in/",
+  "academic_year": "2026-27",
+  "extracted_at": "2026-11-14T18:50:05.542Z",
+  "model": "gemini-3.5-flash-lite",
+  "pages": [
+    {
+      "page": 1,
+      "chars": 1915
+    },
+    {
+      "page": 2,
+      "chars": 2301
+    },
+    {
+      "page": 3,
+      "chars": 2085
+    },
+    {
+      "page": 4,
+      "chars": 1307
+    }
+  ],
+  "low_text_pages": [],
+  "fields": {
+    "name": {
+      "label": "Scheme name",
+      "llm_value": "Central Sector Scheme of Scholarship for College and University Students (PM-USP CSSS)",
+      "value": "Central Sector Scheme of Scholarship for College and University Students (PM-USP CSSS)",
+      "evidence": [
+        {
+          "page": 1,
+          "text": "CENTRALSECTORSCHEMEOFSCHOLARSHIPFORCOLLEGEAND\nUNIVERSITYSTUDENTS(PM-USPCSSS)",
+          "match": "exact",
+          "found_on_pages": [
+            1
+          ]
+        }
+      ],
+      "status": "verified",
+      "reasons": [],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T18:55:56.809Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "authority": {
+      "label": "Authority",
+      "llm_value": "Ministry of Education, Government of India",
+      "value": "Ministry of Education, Government of India",
+      "evidence": [
+        {
+          "page": 1,
+          "text": "The scholarships are awarded by Ministry of Education, Government of India on\nthebasis of results of Higher Secondary / Class XII Board Examination.",
+          "match": "exact",
+          "found_on_pages": [
+            1
+          ]
+        }
+      ],
+      "status": "verified",
+      "reasons": [],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T18:56:31.984Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "state": {
+      "label": "State (or ALL)",
+      "llm_value": "ALL",
+      "value": "ALL",
+      "evidence": [
+        {
+          "page": 1,
+          "text": "CENTRALSECTORSCHEMEOFSCHOLARSHIPFORCOLLEGEAND\nUNIVERSITYSTUDENTS(PM-USPCSSS)",
+          "match": "exact",
+          "found_on_pages": [
+            1
+          ]
+        }
+      ],
+      "status": "verified",
+      "reasons": [],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T18:56:52.472Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "benefit_amount": {
+      "label": "Benefit",
+      "llm_value": "Rs. 12,000 to Rs. 20,000 per annum",
+      "value": "Rs. 12,000 to Rs. 20,000 per annum",
+      "evidence": [
+        {
+          "page": 3,
+          "text": "The rate of scholarship is Rs.12,000/-per annum at Graduation level for first\nthreeyearsofCollegeandUniversitycoursesandRs.20,000/-perannumatPost-Graduation\nlivel.",
+          "match": "not_in_pdf",
+          "found_on_pages": []
+        }
+      ],
+      "status": "verified",
+      "reasons": [
+        "page 3: quote not found anywhere in the PDF text (possibly made up)"
+      ],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T18:57:45.140Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "deadline": {
+      "label": "Deadline",
+      "llm_value": null,
+      "value": null,
+      "evidence": [],
+      "status": "not_found",
+      "reasons": [
+        "the model says this is not stated in the PDF; confirm or correct"
+      ],
+      "review": {
+        "decision": "not_found",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T18:58:19.188Z",
+        "note": "yearly date is in NSP notices, not the guidelines"
+      },
+      "history": []
+    },
+    "eligibility.income_max": {
+      "label": "Income limit (Rs/year)",
+      "llm_value": 450000,
+      "value": 450000,
+      "evidence": [
+        {
+          "page": 2,
+          "text": "Students with gross parental/family income uptoRs. 4.5 lakh per annum\nareeligible for scholarship under the scheme.",
+          "match": "exact",
+          "found_on_pages": [
+            2
+          ]
+        }
+      ],
+      "status": "verified",
+      "reasons": [],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T18:58:22.760Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "eligibility.categories": {
+      "label": "Categories",
+      "llm_value": [
+        "GENERAL",
+        "OBC",
+        "SC",
+        "ST",
+        "MINORITY"
+      ],
+      "value": [
+        "ALL"
+      ],
+      "evidence": [
+        {
+          "page": 1,
+          "text": "In case ofshortfall in the number of\napplications, the scholarship slots shall be interoperableamong categories (Gen, OBC,\nSC & ST), gender (Female, Male) and State Quota tomaximize use of slots for fresh\nscholarships with effect from academic year 2022-",
+          "match": "approximate",
+          "found_on_pages": [
+            1
+          ]
+        },
+        {
+          "page": 2,
+          "text": "Students belonging to reserved categories/weaker sections /minorities etc. are\neligibletoget benefit of reservationon the basis of merit, subject to Central\nReservationPolicy [i.e. 15% seats are earmarked for SCs, 7.5% for STs and 27 % for\nOBCs and5%horizontal reservation for students with Benchmark Disabilities\n(Disability of 40% or more) in all the categories].",
+          "match": "exact",
+          "found_on_pages": [
+            2
+          ]
+        }
+      ],
+      "status": "corrected",
+      "reasons": [
+        "page 1: quote only matches after ignoring spaces/punctuation; compare with the PDF",
+        "category GENERAL is not mentioned in the quote"
+      ],
+      "review": {
+        "decision": "correct",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:01:38.808Z",
+        "note": "open to all; the Gen/OBC/SC/ST list is about sharing slots"
+      },
+      "history": []
+    },
+    "eligibility.course_levels": {
+      "label": "Course levels",
+      "llm_value": [
+        "UG",
+        "PG"
+      ],
+      "value": [
+        "UG",
+        "PG"
+      ],
+      "evidence": [
+        {
+          "page": 1,
+          "text": "A maximum\nof82,000freshscholarshipsperannumareprovidedforpursuinggraduate/postgraduate\ndegree in colleges and universities and for professional courses, such\nasMedical,Engineeringetc.",
+          "match": "exact",
+          "found_on_pages": [
+            1
+          ]
+        }
+      ],
+      "status": "verified",
+      "reasons": [],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:01:47.760Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "eligibility.year_of_study": {
+      "label": "Years of study",
+      "llm_value": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "value": [
+        1
+      ],
+      "evidence": [
+        {
+          "page": 3,
+          "text": "The rate of scholarship is Rs.12,000/-per annum at Graduation level for first\nthreeyearsofCollegeandUniversitycoursesandRs.20,000/-perannumatPost-Graduation\nlivel.",
+          "match": "not_in_pdf",
+          "found_on_pages": []
+        }
+      ],
+      "status": "corrected",
+      "reasons": [
+        "page 3: quote not found anywhere in the PDF text (possibly made up)"
+      ],
+      "review": {
+        "decision": "correct",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:02:13.324Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "eligibility.gender": {
+      "label": "Gender",
+      "llm_value": "ALL",
+      "value": "ALL",
+      "evidence": [
+        {
+          "page": 1,
+          "text": "50% of the scholarships are earmarked for\ngirls.",
+          "match": "exact",
+          "found_on_pages": [
+            1
+          ]
+        }
+      ],
+      "status": "verified",
+      "reasons": [],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:02:18.329Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "eligibility.min_marks_pct": {
+      "label": "Minimum marks (%)",
+      "llm_value": 50,
+      "value": null,
+      "evidence": [
+        {
+          "page": 2,
+          "text": "For renewal of scholarship in each year of study, besides getting at least\n50%marks in the Annual Examination, maintenance of adequate attendance of at\nleast75%, will also be the criteria.",
+          "match": "exact",
+          "found_on_pages": [
+            2
+          ]
+        }
+      ],
+      "status": "not_found",
+      "reasons": [],
+      "review": {
+        "decision": "not_found",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:02:34.048Z",
+        "note": "entry = 80th percentile of board; 50% is the renewal rule"
+      },
+      "history": []
+    },
+    "eligibility.requires_disability": {
+      "label": "Needs disability certificate",
+      "llm_value": false,
+      "value": false,
+      "evidence": [],
+      "status": "verified",
+      "reasons": [
+        "no supporting text was given"
+      ],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:02:39.832Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "eligibility.domicile_required": {
+      "label": "Domicile required",
+      "llm_value": false,
+      "value": false,
+      "evidence": [],
+      "status": "verified",
+      "reasons": [
+        "no supporting text was given"
+      ],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:02:43.816Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "sections.eligibility": {
+      "label": "Eligibility text",
+      "llm_value": "Students who are above 80th percentile of successful candidates in the relevant stream from the respective Board of Examination in Class XII of 10+2 pattern or equivalent;\nii. Pursuing regular degree courses and not correspondence or distance mode or pursuing Diploma courses;\niii. Pursuing courses at colleges/institutions recognized by All India Council for Technical Education and respective Regulatory Bodies concerned;\niv. Not availing benefit of any other scholarship schemes including State run scholarship schemes/fee waiver & reimbursement scheme;\nv. Students with gross parental/family income upto Rs. 4.5 lakh per annum are eligible for scholarship under the scheme.",
+      "value": "Students who are above 80th percentile of successful candidates in the relevant stream from the respective Board of Examination in Class XII of 10+2 pattern or equivalent;\nii. Pursuing regular degree courses and not correspondence or distance mode or pursuing Diploma courses;\niii. Pursuing courses at colleges/institutions recognized by All India Council for Technical Education and respective Regulatory Bodies concerned;\niv. Not availing benefit of any other scholarship schemes including State run scholarship schemes/fee waiver & reimbursement scheme;\nv. Students with gross parental/family income upto Rs. 4.5 lakh per annum are eligible for scholarship under the scheme.",
+      "evidence": [
+        {
+          "page": 1,
+          "text": "4. EligibilityforScholarship\ni. Students who are above 80th percentile of successful candidates in the\nrelevantstream from the respective Board of Examination in Class XII of 10+2\npattern orequivalent;",
+          "match": "exact",
+          "found_on_pages": [
+            1
+          ]
+        }
+      ],
+      "status": "verified",
+      "reasons": [],
+      "review": {
+        "decision": "approve",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:02:50.213Z",
+        "note": ""
+      },
+      "history": []
+    },
+    "sections.benefits": {
+      "label": "Benefits text",
+      "llm_value": "The rate of scholarship is Rs.12,000/- per annum at Graduation level for first three years of College and University courses and Rs.20,000/- per annum at Post-Graduation level.",
+      "value": "Rs 12,000 per year at graduation level for the first three years of college and university courses, and Rs 20,000 per year at post-graduation level. Students in professional courses lasting five years, or integrated courses, get Rs 20,000 per year in the 4th and 5th years. Students in technical courses such as B.Tech or B.Engg get the scholarship up to graduation level only: Rs 12,000 per year for the 1st, 2nd and 3rd years and Rs 20,000 in the 4th year. The money is paid directly into the student's own savings bank account by Direct Benefit Transfer (DBT).",
+      "evidence": [
+        {
+          "page": 3,
+          "text": "The rate of scholarship is Rs.12,000/-per annum at Graduation level for first\nthreeyearsofCollegeandUniversitycoursesandRs.20,000/-perannumatPost-Graduation\nlivel.",
+          "match": "not_in_pdf",
+          "found_on_pages": []
+        }
+      ],
+      "status": "corrected",
+      "reasons": [
+        "page 3: quote not found anywhere in the PDF text (possibly made up)"
+      ],
+      "review": {
+        "decision": "correct",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:27:10.136Z",
+        "note": "full section 7 and 8",
+        "evidence": {
+          "page": 3,
+          "text": ""
+        }
+      },
+      "history": [
+        {
+          "decision": "approve",
+          "by": "Akshit Kumar Singh",
+          "at": "2026-11-14T19:02:54.844Z",
+          "note": ""
+        },
+        {
+          "decision": "correct",
+          "by": "Akshit Kumar Singh",
+          "at": "2026-11-14T19:23:50.380Z",
+          "note": ""
+        }
+      ]
+    },
+    "sections.documents": {
+      "label": "Documents text",
+      "llm_value": "Income certificate will be required only for the fresh applicants.",
+      "value": "Income certificate (needed only for fresh applicants, not for renewal). Caste and educational qualification details are verified online through DigiLocker. The student must have a savings bank account in their own name, because the scholarship is paid by Direct Benefit Transfer (DBT). The guidelines do not give a full checklist; see the National Scholarships Portal (NSP) for the complete document list.",
+      "evidence": [
+        {
+          "page": 2,
+          "text": "Students with gross parental/family income uptoRs. 4.5 lakh per annum\nareeligible for scholarship under the scheme. Income certificate will be required\nonlyforthe fresh applicants;",
+          "match": "exact",
+          "found_on_pages": [
+            2
+          ]
+        }
+      ],
+      "status": "corrected",
+      "reasons": [],
+      "review": {
+        "decision": "correct",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:08:11.355Z",
+        "note": "combined from 4(v) p2, 6(i) and 8 p3; PDF has no full checklist"
+      },
+      "history": []
+    },
+    "sections.process": {
+      "label": "Process text",
+      "llm_value": "Beneficiaries/ Applicants under the scheme must apply online in the National Scholarships Portal (www.scholarships.gov.in) for the fresh/ renewal scholarships.",
+      "value": "Apply online on the National Scholarships Portal (www.scholarships.gov.in) for both fresh and renewal scholarships; applications sent directly to the Ministry of Education are not accepted. Caste and educational qualifications are verified through DigiLocker. Applications are verified at two levels: first by the student's institute, then by the State Higher Education Department or State Nodal Agency. NSP announces the opening and closing dates and publishes the selection list. To renew each year, the student needs at least 50% marks in the annual examination and at least 75% attendance; complaints of indiscipline or ragging lead to loss of the scholarship. Renewal applications must be submitted by the cut-off date, or renewal for that year is not allowed. A student who missed renewal can apply for renewal in a later year if they meet the renewal conditions.",
+      "evidence": [
+        {
+          "page": 2,
+          "text": "Beneficiaries/ Applicants under the scheme must apply online in the\nNationalScholarships Portal (www.scholarships.gov.in) for the fresh/ renewal\nscholarships.",
+          "match": "exact",
+          "found_on_pages": [
+            2
+          ]
+        }
+      ],
+      "status": "corrected",
+      "reasons": [],
+      "review": {
+        "decision": "correct",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:28:00.403Z",
+        "note": "sections 4(vii)-(ix) and 6",
+        "evidence": {
+          "page": 2,
+          "text": ""
+        }
+      },
+      "history": [
+        {
+          "decision": "approve",
+          "by": "Akshit Kumar Singh",
+          "at": "2026-11-14T19:08:39.668Z",
+          "note": ""
+        }
+      ]
+    },
+    "eligibility.min_board_percentile": {
+      "label": "Minimum board percentile (rank)",
+      "llm_value": null,
+      "value": 80,
+      "evidence": [],
+      "status": "corrected",
+      "reasons": [
+        "new field, added after this PDF was extracted: check the PDF yourself"
+      ],
+      "review": {
+        "decision": "correct",
+        "by": "Akshit Kumar Singh",
+        "at": "2026-11-14T19:17:49.884Z",
+        "note": "entry rule, section 4(i); 50% marks is the renewal rule",
+        "evidence": {
+          "page": 1,
+          "text": "Students who are above 80th percentile of successful candidates"
+        }
+      },
+      "history": []
+    }
+  },
+  "overall_status": "verified"
+}

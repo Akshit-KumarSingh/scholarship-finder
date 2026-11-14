@@ -28,7 +28,9 @@ const cases = JSON.parse(
 const profileSentence = (p) =>
   `I am a ${p.gender?.toLowerCase() || ""} ${p.category} student from ${p.state}, ` +
   `studying ${p.course_level} year ${p.year_of_study}, family income Rs ${p.income}, ` +
-  `scored ${p.marks_pct}%. Which scholarship am I eligible for?`;
+  `scored ${p.marks_pct}%.` +
+  (p.board_percentile ? ` My Class XII board rank is the ${p.board_percentile}th percentile.` : "") +
+  " Which scholarship am I eligible for?";
 
 let tp = 0;
 let fp = 0;

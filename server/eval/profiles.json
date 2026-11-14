@@ -1,12 +1,12 @@
 [
   {
-    "_README": "Expected IDs below match the PLACEHOLDER seed data. Once you correct the scheme figures from the official PDFs, you must rework these expectations by hand too — that is what makes the eval trustworthy. Add profiles until you have 20.",
+    "_README": "Expected IDs below match the PLACEHOLDER seed data. Once you correct the scheme figures from the official PDFs, you must rework these expectations by hand too — that is what makes the eval trustworthy. Add profiles until you have 20. css-ug (p1, p7, p8, p16) was reworked on 2026-11-15 after its record was verified from the official CSSS guidelines PDF.",
     "id": "_meta",
     "skip": true
   },
   {
     "id": "p1",
-    "note": "OBC, income above the OBC ceiling but under the central merit ceiling",
+    "note": "OBC final-year B.Tech, 4 lakh: css-ug is first-year only (real CSSS guidelines), so nothing confirmed",
     "profile": {
       "income": 400000,
       "category": "OBC",
@@ -16,8 +16,12 @@
       "gender": "MALE",
       "marks_pct": 85
     },
-    "expected_eligible": ["css-ug"],
-    "must_not_include": ["pms-obc", "up-postmatric"]
+    "expected_eligible": [],
+    "must_not_include": [
+      "pms-obc",
+      "up-postmatric",
+      "css-ug"
+    ]
   },
   {
     "id": "p2",
@@ -31,8 +35,14 @@
       "gender": "MALE",
       "marks_pct": 62
     },
-    "expected_eligible": ["pms-sc", "up-postmatric"],
-    "must_not_include": ["pms-obc", "aicte-pragati"]
+    "expected_eligible": [
+      "pms-sc",
+      "up-postmatric"
+    ],
+    "must_not_include": [
+      "pms-obc",
+      "aicte-pragati"
+    ]
   },
   {
     "id": "p3",
@@ -46,8 +56,13 @@
       "gender": "FEMALE",
       "marks_pct": 78
     },
-    "expected_eligible": ["aicte-pragati"],
-    "must_not_include": ["aicte-saksham", "css-ug"]
+    "expected_eligible": [
+      "aicte-pragati"
+    ],
+    "must_not_include": [
+      "aicte-saksham",
+      "css-ug"
+    ]
   },
   {
     "id": "p4",
@@ -62,7 +77,9 @@
       "marks_pct": 78
     },
     "expected_eligible": [],
-    "must_not_include": ["aicte-pragati"]
+    "must_not_include": [
+      "aicte-pragati"
+    ]
   },
   {
     "id": "p5",
@@ -77,8 +94,12 @@
       "marks_pct": 70,
       "disability": true
     },
-    "expected_eligible": ["aicte-saksham"],
-    "must_not_include": ["up-postmatric"]
+    "expected_eligible": [
+      "aicte-saksham"
+    ],
+    "must_not_include": [
+      "up-postmatric"
+    ]
   },
   {
     "id": "p6",
@@ -92,38 +113,52 @@
       "gender": "FEMALE",
       "marks_pct": 65
     },
-    "expected_eligible": ["pms-sc"],
-    "must_not_include": ["up-postmatric", "up-dashmottar"]
+    "expected_eligible": [
+      "pms-sc"
+    ],
+    "must_not_include": [
+      "up-postmatric",
+      "up-dashmottar"
+    ]
   },
   {
     "id": "p7",
-    "note": "High marks, income just under the central merit ceiling",
+    "note": "First-year, income just under the CSSS ceiling, board rank stated (92nd percentile): confirmed for css-ug",
     "profile": {
       "income": 440000,
       "category": "GENERAL",
       "state": "UP",
       "course_level": "UG",
-      "year_of_study": 2,
+      "year_of_study": 1,
       "gender": "MALE",
-      "marks_pct": 88
+      "marks_pct": 88,
+      "board_percentile": 92
     },
-    "expected_eligible": ["css-ug"],
-    "must_not_include": ["pms-sc", "pms-obc"]
+    "expected_eligible": [
+      "css-ug"
+    ],
+    "must_not_include": [
+      "pms-sc",
+      "pms-obc"
+    ]
   },
   {
     "id": "p8",
-    "note": "Same as p7 but marks below the merit threshold",
+    "note": "Same as p7 but board rank 70th percentile, below the CSSS 80th-percentile rule",
     "profile": {
       "income": 440000,
       "category": "GENERAL",
       "state": "UP",
       "course_level": "UG",
-      "year_of_study": 2,
+      "year_of_study": 1,
       "gender": "MALE",
-      "marks_pct": 71
+      "marks_pct": 88,
+      "board_percentile": 70
     },
     "expected_eligible": [],
-    "must_not_include": ["css-ug"]
+    "must_not_include": [
+      "css-ug"
+    ]
   },
   {
     "id": "p9",
@@ -137,8 +172,15 @@
       "gender": "FEMALE",
       "marks_pct": 68
     },
-    "expected_eligible": ["pm-yasasvi", "nmms", "up-kanya-sumangala"],
-    "must_not_include": ["css-ug", "pms-obc"]
+    "expected_eligible": [
+      "pm-yasasvi",
+      "nmms",
+      "up-kanya-sumangala"
+    ],
+    "must_not_include": [
+      "css-ug",
+      "pms-obc"
+    ]
   },
   {
     "id": "p10",
@@ -152,8 +194,15 @@
       "gender": "FEMALE",
       "marks_pct": 58
     },
-    "expected_eligible": ["up-dashmottar", "mcm-minority", "igp-single-girl"],
-    "must_not_include": ["pms-obc", "aicte-pragati"]
+    "expected_eligible": [
+      "up-dashmottar",
+      "mcm-minority",
+      "igp-single-girl"
+    ],
+    "must_not_include": [
+      "pms-obc",
+      "aicte-pragati"
+    ]
   },
   {
     "id": "p11",
@@ -167,8 +216,14 @@
       "gender": "MALE",
       "marks_pct": 65
     },
-    "expected_eligible": ["pms-st", "up-postmatric"],
-    "must_not_include": ["pms-sc", "pms-obc"]
+    "expected_eligible": [
+      "pms-st",
+      "up-postmatric"
+    ],
+    "must_not_include": [
+      "pms-sc",
+      "pms-obc"
+    ]
   },
   {
     "id": "p12",
@@ -182,8 +237,13 @@
       "gender": "MALE",
       "marks_pct": 70
     },
-    "expected_eligible": ["ishan-uday"],
-    "must_not_include": ["up-postmatric", "aicte-pragati"]
+    "expected_eligible": [
+      "ishan-uday"
+    ],
+    "must_not_include": [
+      "up-postmatric",
+      "aicte-pragati"
+    ]
   },
   {
     "id": "p13",
@@ -197,8 +257,14 @@
       "gender": "FEMALE",
       "marks_pct": 72
     },
-    "expected_eligible": ["igp-single-girl"],
-    "must_not_include": ["css-ug", "pms-obc", "mcm-minority"]
+    "expected_eligible": [
+      "igp-single-girl"
+    ],
+    "must_not_include": [
+      "css-ug",
+      "pms-obc",
+      "mcm-minority"
+    ]
   },
   {
     "id": "p14",
@@ -212,8 +278,14 @@
       "gender": "FEMALE",
       "marks_pct": 75
     },
-    "expected_eligible": ["nmms", "up-kanya-sumangala", "up-kanya-vidya-dhan"],
-    "must_not_include": ["pm-yasasvi"]
+    "expected_eligible": [
+      "nmms",
+      "up-kanya-sumangala",
+      "up-kanya-vidya-dhan"
+    ],
+    "must_not_include": [
+      "pm-yasasvi"
+    ]
   },
   {
     "id": "p15",
@@ -228,6 +300,26 @@
       "marks_pct": 45
     },
     "expected_eligible": [],
-    "must_not_include": ["mcm-minority", "up-dashmottar"]
+    "must_not_include": [
+      "mcm-minority",
+      "up-dashmottar"
+    ]
+  },
+  {
+    "id": "p16",
+    "note": "High Class XII marks but no board rank given: css-ug must stay possible, never confirmed (marks are not a percentile)",
+    "profile": {
+      "income": 300000,
+      "category": "GENERAL",
+      "state": "UP",
+      "course_level": "UG",
+      "year_of_study": 1,
+      "gender": "MALE",
+      "marks_pct": 95
+    },
+    "expected_eligible": [],
+    "must_not_include": [
+      "css-ug"
+    ]
   }
 ]

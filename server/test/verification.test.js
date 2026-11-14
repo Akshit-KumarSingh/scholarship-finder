@@ -24,13 +24,17 @@ import {
   renderReport,
   selectIngestable,
   upsertRecord,
+  upgradeReview,
+  buildPrompt,
 } from "../lib/verification.js";
 import { evaluateSchemes } from "../lib/tools.js";
 import { chunkScheme } from "../lib/chunk.js";
 
 const fixture = new URL("./fixtures/sample-scheme.pdf", import.meta.url);
 const pages = await readPdfPages(readFileSync(fixture));
-const schemesJson = JSON.parse(readFileSync(new URL("../data/schemes.json", import.meta.url), "utf8"));
+// A frozen copy of the placeholder data, so these tests don't change meaning
+// every time a real scheme is verified into data/schemes.json.
+const schemesJson = JSON.parse(readFileSync(new URL("./fixtures/schemes-placeholder.json", import.meta.url), "utf8"));
 
 const Q = {
   name: "Demo Post Matric Scholarship (TEST FIXTURE, NOT A REAL SCHEME)",
@@ -61,6 +65,7 @@ function goodLlmOutput() {
       "eligibility.year_of_study": f(null),
       "eligibility.gender": f(null),
       "eligibility.min_marks_pct": f(60, 2, Q.marks),
+      "eligibility.min_board_percentile": f(null),
       "eligibility.requires_disability": f(null),
       "eligibility.domicile_required": f(true, 2, Q.domicile),
       "sections.eligibility": f(`${Q.category}\n\n${Q.income}\n\n${Q.marks}\n\n${Q.domicile}`, 2, Q.category),
@@ -144,9 +149,17 @@ test("pages that disagree about a value are flagged", () => {
   assert.ok(r.reasons.some((x) => /pages disagree/.test(x)));
 });
 
-test("a quote that only matches loosely (PDF spacing problems) goes to a human", () => {
-  const messy = [{ page: 1, text: "The annual familyincome should notexceed Rs.2.5 lakh." }];
-  const r = checkField("eligibility.income_max", { value: 250000, evidence: [{ page: 1, text: "The annual family income should not exceed Rs. 2.5 lakh." }] }, messy);
+test("missing spaces in the PDF text are not a mismatch (real PM-USP PDF problem)", () => {
+  // From the real CSSS guidelines: the PDF text runs words together.
+  const messy = [{ page: 1, text: "In case ofshortfall in the number of applications, the scholarship slots shall be interoperableamong categories (Gen, OBC, SC & ST)" }];
+  const r = checkField("sections.eligibility", { value: "x", evidence: [{ page: 1, text: "In case of shortfall in the number of applications, the scholarship slots shall be interoperable among categories" }] }, messy);
+  assert.equal(r.evidence[0].match, "exact");
+  assert.equal(r.status, "pending");
+});
+
+test("a quote that only matches after ignoring punctuation goes to a human", () => {
+  const messy = [{ page: 1, text: "The annual family income should not exceed Rs. 2.5 lakh." }];
+  const r = checkField("eligibility.income_max", { value: 250000, evidence: [{ page: 1, text: "The annual family income should not exceed Rs 2.5 lakh" }] }, messy);
   assert.equal(r.evidence[0].match, "approximate");
   assert.equal(r.status, "needs_review");
 });
@@ -206,7 +219,7 @@ test("'not in the PDF' must be confirmed by a human before finalizing", async ()
     if (review.fields[key].status !== "not_found") applyDecision(review, key, "approve", { by: "S" });
   }
   const left = blockers(review).map((b) => b.key);
-  assert.deepEqual(left.sort(), ["eligibility.gender", "eligibility.requires_disability", "eligibility.year_of_study"]);
+  assert.deepEqual(left.sort(), ["eligibility.gender", "eligibility.min_board_percentile", "eligibility.requires_disability", "eligibility.year_of_study"]);
   assert.throws(() => finalizeRecord(review), /still need a human decision/);
 });
 
@@ -300,4 +313,76 @@ test("garbage from the model is a clear error, not a half-filled record", async 
 test("locateQuote ignores line breaks, curly quotes and case", () => {
   const p = [{ page: 1, text: "The annual\nfamily income “should” NOT exceed Rs. 2.5 lakh." }];
   assert.equal(locateQuote('the annual family income "should" not exceed Rs. 2.5 lakh', 1, p).result, "exact");
+});
+
+/* ---------------------------------------------------------------- */
+/* Fixes from the first real PDF (PM-USP CSSS guidelines)            */
+/* ---------------------------------------------------------------- */
+
+test("'Gen' counts as GENERAL", () => {
+  const p = [{ page: 1, text: "slots shall be interoperable among categories (Gen, OBC, SC & ST)" }];
+  const r = checkField("eligibility.categories", { value: ["GENERAL", "OBC"], evidence: [{ page: 1, text: "categories (Gen, OBC, SC & ST)" }] }, p);
+  assert.ok(!r.reasons.some((x) => /GENERAL is not mentioned/.test(x)), r.reasons.join("; "));
+});
+
+test("a sentence cut by a page break is found across the two pages", () => {
+  const p = [
+    { page: 1, text: "Students pursuing technical courses such as B.Tech will get Rs. 12,000 p.a. for 1st, 2nd" },
+    { page: 2, text: "and 3rd year and Rs. 20,000 in the 4th year." },
+  ];
+  const where = locateQuote("for 1st, 2nd and 3rd year and Rs. 20,000 in the 4th year", 1, p);
+  assert.equal(where.result, "across_pages");
+  assert.deepEqual(where.foundOn, [1, 2]);
+  const r = checkField("sections.benefits", { value: "x", evidence: [{ page: 1, text: "for 1st, 2nd and 3rd year and Rs. 20,000 in the 4th year" }] }, p);
+  assert.equal(r.status, "pending");
+});
+
+test("a reworded quote shows the closest real text so the reviewer can compare", () => {
+  const p = [
+    { page: 3, text: "Objective. The rate of scholarship is Rs.12,000/-per annum at Graduation level for first three years of College and University courses. Payment is by DBT." },
+  ];
+  const r = checkField("benefit_amount", { value: "Rs 12,000 per year", evidence: [{ page: 3, text: "The scholarship rate is Rs 12,000 per year at graduation level for the first three years" }] }, p);
+  assert.equal(r.evidence[0].match, "not_in_pdf");
+  assert.ok(r.evidence[0].closest, "closest text should be found");
+  assert.equal(r.evidence[0].closest.page, 3);
+  assert.match(r.evidence[0].closest.text, /rate of scholarship is Rs\.12,000/);
+  assert.match(r.reasons.join(), /closest text is on page 3/);
+  // an invented quote with nothing similar still says "possibly made up"
+  const r2 = checkField("benefit_amount", { value: "x", evidence: [{ page: 3, text: "Free laptops are given to every hostel resident" }] }, p);
+  assert.match(r2.reasons.join(), /possibly made up/);
+});
+
+test("percentile values are read and checked; a renewal quote in the marks field is flagged", () => {
+  const p = [{ page: 1, text: "Students who are above 80 th percentile of successful candidates in the relevant stream. For renewal of scholarship, getting at least 50% marks." }];
+  const ok = checkField("eligibility.min_board_percentile", { value: 80, evidence: [{ page: 1, text: "above 80 th percentile of successful candidates" }] }, p);
+  assert.equal(ok.status, "pending", ok.reasons.join("; "));
+  const bad = checkField("eligibility.min_marks_pct", { value: 50, evidence: [{ page: 1, text: "For renewal of scholarship, getting at least 50% marks." }] }, p);
+  assert.match(bad.reasons.join(), /renewal/);
+  assert.equal(parseTypedValue("eligibility.min_board_percentile", "80th"), 80);
+});
+
+test("an older review file gets the new field as 'not reviewed', and can't finalize until it is", async () => {
+  const review = await fullyReviewed();
+  delete review.fields["eligibility.min_board_percentile"];
+  const added = upgradeReview(review);
+  assert.deepEqual(added, ["eligibility.min_board_percentile"]);
+  assert.equal(review.overall_status, "pending");
+  assert.throws(() => finalizeRecord(review), /still need a human decision/);
+  applyDecision(review, "eligibility.min_board_percentile", "correct", { by: "Sadhuram", value: 80, evidence: { page: 1, text: "above 80th percentile" } });
+  const record = finalizeRecord(review);
+  assert.equal(record.eligibility.min_board_percentile, 80);
+  assert.deepEqual(upgradeReview(review), [], "nothing to add the second time");
+});
+
+test("approving can carry a note", async () => {
+  const review = await extract(goodLlmOutput());
+  applyDecision(review, "name", "approve", { by: "Sadhuram", note: "checked title page" });
+  assert.equal(review.fields.name.review.note, "checked title page");
+});
+
+test("the extraction prompt separates fresh rules from renewal rules", () => {
+  const prompt = buildPrompt([{ page: 1, text: "x" }]);
+  assert.match(prompt, /min_board_percentile/);
+  assert.match(prompt, /must NOT go into eligibility\.\* fields/);
+  assert.match(prompt, /use \["ALL"\]/);
 });

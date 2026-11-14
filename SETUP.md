@@ -103,7 +103,7 @@ both blocks in your README.
 ### Test
 
 ```bash
-npm run test:unit     # 34 tests, no database or LLM needed
+npm run test:unit     # 45 tests, no database or LLM needed
 npm test              # those + 11 end-to-end tests through MongoDB (run ingest:dev first)
 npm run agent-check   # optional: replays a tricky question against the real LLM
 ```
@@ -196,10 +196,15 @@ The LLM proposes every field **with the exact sentence and page it came from**.
 Code checks that evidence against the real PDF text. A human approves or
 corrects each field. Only then does the scheme become `verified: true`.
 
+Run these from the `server` folder. They use `node scripts/...` rather than
+`npm run x -- ...` because Windows PowerShell drops the `--option` names when
+they pass through npm (`npm run extract -- a.pdf id --academic-year 2026-27`
+reaches the script without `--academic-year`). The node form works everywhere.
+
 ```bash
 cd server
 # 1. Extract (PDF in server/pdfs/, which is git-ignored)
-npm run extract -- ./pdfs/up-postmatric.pdf up-postmatric --academic-year 2026-27 --source-url https://... --apply-url https://...
+node scripts/extract.js ./pdfs/up-postmatric.pdf up-postmatric --academic-year 2026-27 --source-url https://... --apply-url https://...
 
 # 2. Read the report: data/review/up-postmatric.md
 #    Every field: value | PDF page | exact supporting text | status.
@@ -207,11 +212,15 @@ npm run extract -- ./pdfs/up-postmatric.pdf up-postmatric --academic-year 2026-2
 #    numbers that don't match their quote (the lakh slip), and pages that disagree.
 
 # 3. Review, one field at a time, with the PDF open next to you
-npm run review -- up-postmatric --by "Your Name"
-#    a = approve · c = correct (original kept for the audit trail) · n = confirm not in PDF · s = skip · q = save and quit
+node scripts/review.js up-postmatric --by "Your Name"
+#    a = approve (a <note> approves with a note) · c = correct (original kept for the audit trail)
+#    n = confirm not in PDF · s = skip · q = save and quit
+#    After c it asks, in order: value, page, exact text, note. Pasted text may
+#    have line breaks; they stay in the same answer.
+#    Fix one field later: node scripts/review.js up-postmatric --by "Your Name" --field eligibility.categories
 
 # 4. Write the verified record into data/schemes.json
-npm run finalize -- up-postmatric        # refuses, listing what's left, until every field has a human decision
+node scripts/finalize.js up-postmatric   # refuses, listing what's left, until every field has a human decision
 
 # 5. Load it
 npm run ingest                           # strict: only verified schemes
@@ -228,7 +237,24 @@ What each status means:
 | `corrected` | human | Replaced; the model's value and evidence are kept beside it |
 
 Files in `data/review/` are the audit trail (who decided what, when, and why).
-Commit them. `npm run report -- <id>` re-creates the `.md` report from the JSON.
+Commit them. `node scripts/report.js <id>` re-creates the `.md` report from the JSON.
+
+What the checks treat as the same text: case, curly quotes, line breaks, and
+missing or extra spaces (many government PDFs lose the spaces between words:
+"ofshortfall"). A sentence split by a page break is found across the two pages.
+A quote that still isn't found shows the closest real sentence from the PDF,
+so you can see whether the model reworded it or invented it.
+
+Fresh vs renewal: the eligibility fields describe who may **apply fresh**.
+Renewal rules (marks to keep the scholarship, attendance) belong in the
+eligibility/process text, not in `min_marks_pct`. A rank such as "above the
+80th percentile of your board" goes in `min_board_percentile`: marks can't be
+turned into a percentile, so unless the student states their rank the scheme
+stays "possible".
+
+When a new field is added to the record, older review files get it as "not
+reviewed yet". `node scripts/review.js <id>` then asks only about the new
+field, and finalize waits until it's answered.
 
 Machine checks are never approval: a quote can be real and still be misread.
 Scanned pages (almost no text) are listed at the top of the report; check

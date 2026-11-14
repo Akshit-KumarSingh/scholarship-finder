@@ -48,6 +48,7 @@ export const ProfileSchema = z.object({
   year_of_study: optionalNumber("year_of_study", 1, 10),
   gender: optionalEnum(["MALE", "FEMALE", "OTHER"]),
   marks_pct: optionalNumber("marks_pct", 0, 100),
+  board_percentile: optionalNumber("board_percentile", 0, 100),
   disability: z.preprocess(
     (v) => (v === "true" ? true : v === "false" ? false : blank(v)),
     z.boolean().optional(),

@@ -1,5 +1,7 @@
 /**
- * npm run extract -- <path-to-pdf> <scheme-id> [--source-url URL] [--apply-url URL] [--academic-year 2026-27]
+ * node scripts/extract.js <path-to-pdf> <scheme-id> [--source-url URL] [--apply-url URL] [--academic-year 2026-27]
+ *
+ * (Windows PowerShell: use this node form. `npm run extract -- ... --option` loses the option names.)
  *
  * Reads an official scheme PDF page by page, asks the LLM for every field
  * WITH the exact sentence and page it came from, then checks that evidence
@@ -9,7 +11,7 @@
  *   data/review/<id>.pages.json  the extracted text of each page (for auditing)
  *   data/review/<id>.md          the report a human reads
  *
- * Nothing here marks anything verified. A human does that with `npm run review`.
+ * Nothing here marks anything verified. A human does that with `node scripts/review.js`.
  */
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -29,7 +31,7 @@ const flag = (name) => {
 const [pdfPath, schemeId] = args.filter((a, i) => !a.startsWith("--") && !args[i - 1]?.startsWith("--"));
 if (!pdfPath || !schemeId) {
   console.error(
-    "Usage: npm run extract -- <path-to-pdf> <scheme-id> [--source-url URL] [--apply-url URL] [--academic-year 2026-27]",
+    "Usage: node scripts/extract.js <path-to-pdf> <scheme-id> [--source-url URL] [--apply-url URL] [--academic-year 2026-27]",
   );
   process.exit(1);
 }
@@ -102,7 +104,7 @@ console.log(`\n  evidence OK, waiting for you   ${by("pending")}`);
 console.log(`  NEEDS REVIEW                  ${by("needs_review")}`);
 console.log(`  model says not in the PDF     ${by("not_found")}`);
 console.log(`\nReport:  data/review/${schemeId}.md`);
-console.log(`Next:    npm run review -- ${schemeId} --by "Your Name"\n`);
+console.log(`Next:    node scripts/review.js ${schemeId} --by "Your Name"\n`);
 if (!review.academic_year) {
   console.log("Note: no --academic-year given. Set it in the review file before finalizing.\n");
 }
