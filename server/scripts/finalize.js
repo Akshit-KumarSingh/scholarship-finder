@@ -54,4 +54,9 @@ await fs.writeFile(schemesPath, JSON.stringify(upsertRecord(all, record), null, 
 
 console.log(`\n${existed ? "Replaced" : "Added"} ${schemeId} in data/schemes.json (verified: true).`);
 console.log(`Reviewed by ${record.verification.reviewed_by.join(", ")}, last decision ${record.verification.reviewed_at}.`);
-console.log("\nNext: npm run ingest   (then npm run eval, and update eval/profiles.json if eligibility changed)\n");
+console.log(
+  "\nNext:\n" +
+    "  1. Commit and deploy the code first (a running server that doesn't know a new field would ignore it).\n" +
+    "  2. Load the data: npm run ingest (refuses while any scheme is unverified; for development: npm run ingest:dev).\n" +
+    "  3. npm run eval, and update eval/profiles.json by hand if eligibility changed.\n",
+);

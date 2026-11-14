@@ -114,7 +114,7 @@ so there's no separate parsing step.
 
 ## Results
 
-Run `npm run eval`. It measures two things on a hand-written set of 15 student
+Run `npm run eval`. It measures two things on a hand-written set of 16 student
 profiles with known-correct answers:
 
 **Structured filtering (this project)**
