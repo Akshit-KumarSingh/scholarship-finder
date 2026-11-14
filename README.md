@@ -148,7 +148,7 @@ Tests are separate from the eval:
 
 | Command | What it checks | Needs |
 |---|---|---|
-| `npm run test:unit` | Eligibility rules on `schemes.json`, input validation, the invented-field guard, unknown-id rejection (15 tests) | Nothing |
+| `npm run test:unit` | Eligibility rules, input validation, the invented-field guard, unknown-id rejection, and the PDF evidence + review workflow on a fixture PDF with a fake LLM (34 tests) | Nothing |
 | `npm test` | The above plus 11 end-to-end tests through MongoDB: rules, retrieval, unknown-id rejection, chunking | MongoDB with ingested data |
 | `npm run agent-check` | Asks the real agent the question that exposed the invented-marks bug and fails if any unstated detail reaches the eligibility check | LLM key + MongoDB (costs a few calls) |
 
@@ -180,7 +180,7 @@ cd server
 npm install
 cp .env.example .env        # fill in MONGODB_URI and LLM_API_KEY
 npm run similarity          # see why this architecture exists
-npm run ingest              # load schemes, chunk, embed, store
+npm run ingest:dev          # load the placeholder schemes, chunk, embed, store
 npm run eval                # measure
 npm run test:unit           # rules + validation, no DB needed
 npm run dev                 # http://localhost:3000
@@ -205,16 +205,22 @@ server/
     db.js         Mongo + both vector search backends
     tools.js      the three tools: schemas and implementations
     validate.js   input checking for the API and the model's tool arguments
+    verification.js  evidence checks, human decisions, finalize, the ingest gate
+    extract.js    PDF -> page texts -> LLM -> review file
     agent.js      the tool-calling loop + the invented-field guard
   scripts/
     similarity.js the day-one demo: embeddings can't compare numbers
-    extract.js    LLM-assisted PDF → structured record (draft, needs verifying)
-    ingest.js     chunk, embed, store
+    extract.js    PDF -> fields with page + quote evidence, checked against the PDF
+    review.js     human review, one field at a time (approve / correct / not in PDF)
+    finalize.js   fully reviewed -> verified record in schemes.json
+    report.js     re-create the review report
+    ingest.js     chunk, embed, store (strict: verified only; ingest:dev for placeholders)
     eval.js       precision/recall + the naive-RAG baseline
     agent-check.js  live check that the agent doesn't invent details
   data/schemes.json
+  data/review/<id>.json, .md   evidence, decisions and report per extracted scheme
   eval/profiles.json
-  test/unit.test.js, test/tools.test.js
+  test/unit.test.js, test/verification.test.js, test/tools.test.js
   index.js
 client/
   src/App.jsx, api.js, styles.css
@@ -228,12 +234,13 @@ client/
 scheme names are real; the figures are illustrative so the pipeline has
 something to run on.
 
-Before demoing this, open each official document and correct every field, then
-set `verified: true`. Use `scripts/extract.js` to draft a record from a PDF, but
-check all twelve fields by hand — models slip most often on the lakh-to-rupee
-conversion, and a wrong income ceiling silently tells a student they're
-ineligible when they aren't. You'd spend two days debugging the pipeline before
-thinking to check the data.
+Real records come from the official PDFs through an evidence-backed review
+(SETUP.md section 7): the LLM returns every field with the page and exact
+sentence it came from; code checks the sentence is really on that page and that
+the number in it matches (models slip most often on lakh-to-rupee); a human
+approves or corrects each field; only then is the record `verified: true`.
+`npm run ingest` refuses anything unverified. The placeholder data only loads
+through `npm run ingest:dev`.
 
 Scheme rules also change every academic year. Records carry an `academic_year`
 field, and the UI links to the official portal for the final word.
