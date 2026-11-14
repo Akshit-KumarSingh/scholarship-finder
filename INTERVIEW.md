@@ -100,3 +100,20 @@ before the rules run unless the student mentioned them, the form's profile
 overrides the model's arguments, and both the API and the tool arguments go
 through one validation schema. There's a unit test for each, and an
 `agent-check` script that replays the original question against the real model.
+
+## "What did the first real PDF teach you?"
+
+I ran the pipeline on the official PM-USP Central Sector Scheme guidelines.
+The code checks earned their keep: the model put the **renewal** rule (50%
+marks to keep the scholarship) into the **entry** marks field, when entry is
+really "above the 80th percentile of your Class XII board", a rank my schema
+couldn't store. It also read a sentence about slots being shared between
+categories as a list of who may apply. A human caught both in review.
+
+What I changed: a `min_board_percentile` field (shown as "possible, needs your
+board rank" because marks can't be converted to a rank), prompt rules
+separating fresh from renewal conditions, and fixes for false alarms the real
+PDF exposed: the text had lost the spaces between words ("ofshortfall"), so
+spacing no longer counts as a mismatch; quotes split by a page break are found;
+"Gen" counts as General; and a quote that isn't found shows the closest real
+sentence so the reviewer can tell rewording from invention.

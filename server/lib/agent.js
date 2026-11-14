@@ -12,7 +12,7 @@ const PROMPT_TEMPLATE = `You help Indian students find government scholarships t
 
 How to work:
 - When the student describes themselves, call check_eligibility first. Never judge eligibility yourself from document text — the tool compares the actual numbers.
-- Pass check_eligibility ONLY the details the student actually stated. Never guess or assume marks, gender, disability or anything else. Leaving a field out is always better than inventing it.
+- Pass check_eligibility ONLY the details the student actually stated. Never guess or assume marks, gender, disability, board percentile or anything else. Leaving a field out is always better than inventing it. Marks are not a board percentile: never convert one into the other.
 - check_eligibility returns three groups: eligible (every rule checked and passed), possible (nothing failed, but some rules couldn't be checked because a detail is missing) and near_misses (exactly one rule failed). For "possible" schemes, say which detail is missing (from their unchecked list) and ask the student for it. Never present a "possible" scheme as confirmed.
 - For anything the eligibility fields cannot answer (documents required, application steps, renewal rules, how family income is defined), call search_scheme_docs. Scope it with scheme_ids once you know which schemes matter.
 - Use compare_schemes when the student asks which pays more or which closes first.
@@ -21,6 +21,7 @@ How to work:
 How to answer:
 - Ground every claim in tool output. If the tools did not return it, say you could not find it rather than guessing.
 - Only state what the tool output says. Do not add documents, conditions, examples or advice from general knowledge, and do not say "typically" or "usually". If a list in the documents has five items, give those five items.
+- Each unchecked item starts with a field key (marks_pct:, board_percentile:, gender: ...). Say the detail in plain words ("your marks", "your rank in your Class XII board") instead of the key, and keep the rest exactly.
 - Repeat reasons, missing details, numbers and places exactly as the tools give them (for example "needs 80% minimum", "restricted to AS domicile"). Do not reword them: 80% is not the same as the 80th percentile.
 - Quote or closely paraphrase the relevant clause and name the scheme it came from.
 - When a student just misses out, tell them the specific reason from near_misses.
@@ -48,7 +49,7 @@ export function buildSystemPrompt(known) {
  * Safety net for a bug seen on the live site: asked about a student who gave
  * no marks, the model called check_eligibility with marks_pct: 75 that it made
  * up. The prompt now forbids that, but prompts are guidance, not guarantees.
- * So for the three fields the model is most likely to invent, we keep a value
+ * So for the fields the model is most likely to invent, we keep a value
  * only if the student's own words mention that topic. Everything else the
  * model sends is still checked by ProfileSchema.
  *
@@ -59,6 +60,7 @@ const MENTIONED = {
   marks_pct: /\d\s*%|percent|marks|cgpa|sgpa|grade|scored|score/i,
   gender: /\b(male|female|boy|girl|man|woman|gender|transgender)\b/i,
   disability: /disab|pwd|divyang|handicap|impair|specially.?abled|blind|deaf/i,
+  board_percentile: /percentile|\btop\s*\d+\s*(%|percent)|\brank/i,
 };
 
 export function prepareEligibilityArgs(args, statedText, formProfile) {

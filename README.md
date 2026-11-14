@@ -148,7 +148,7 @@ Tests are separate from the eval:
 
 | Command | What it checks | Needs |
 |---|---|---|
-| `npm run test:unit` | Eligibility rules, input validation, the invented-field guard, unknown-id rejection, and the PDF evidence + review workflow on a fixture PDF with a fake LLM (34 tests) | Nothing |
+| `npm run test:unit` | Eligibility rules, input validation, the invented-field guard, unknown-id rejection, and the PDF evidence + review workflow on a fixture PDF with a fake LLM (45 tests) | Nothing |
 | `npm test` | The above plus 11 end-to-end tests through MongoDB: rules, retrieval, unknown-id rejection, chunking | MongoDB with ingested data |
 | `npm run agent-check` | Asks the real agent the question that exposed the invented-marks bug and fails if any unstated detail reaches the eligibility check | LLM key + MongoDB (costs a few calls) |
 
@@ -256,9 +256,11 @@ field, and the UI links to the official portal for the final word.
   stops the failure that was observed, but a model could still mis-read a
   detail the student did mention.
 - Eligibility fields are a simplification. Real schemes have conditions
-  (institution type, admission route, one-scholarship-at-a-time rules) that
-  aren't modelled, which is why near-misses report a reason rather than a
-  verdict.
+  (regular vs distance courses, institution recognition, one-scholarship-at-a-time
+  rules) that aren't modelled yet; they appear only in the eligibility text the
+  agent quotes. Rank rules ("above the 80th percentile of your board") are
+  stored, but can't be checked from marks, so those schemes stay "possible"
+  unless the student gives their rank.
 - No reranking yet. Retrieving 20 and reranking to 5 with a cross-encoder is
   the obvious next improvement.
 - Scanned PDFs with no text layer aren't handled. Those schemes are skipped.

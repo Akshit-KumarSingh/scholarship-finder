@@ -10,6 +10,7 @@ const BLANK = {
   year_of_study: "1",
   gender: "MALE",
   marks_pct: "",
+  board_percentile: "",
   disability: false,
 };
 
@@ -29,6 +30,7 @@ const FIELD_LABEL = {
   year_of_study: "Year",
   gender: "Gender",
   marks_pct: "Marks",
+  board_percentile: "Board rank",
   disability: "Disability",
 };
 const describeUnchecked = (u) => {
@@ -150,6 +152,7 @@ export default function App() {
       year_of_study: Number(form.year_of_study),
       gender: form.gender,
       marks_pct: form.marks_pct === "" ? undefined : Number(form.marks_pct),
+      board_percentile: form.board_percentile === "" ? undefined : Number(form.board_percentile),
       disability: form.disability,
     };
   }
@@ -353,6 +356,16 @@ export default function App() {
                   />
                 </label>
               </div>
+
+              <label>
+                Class XII board rank (percentile, optional)
+                <input
+                  type="number"
+                  value={form.board_percentile}
+                  onChange={set("board_percentile")}
+                  placeholder="e.g. 85 if you were in the top 15%"
+                />
+              </label>
 
               <label className="check">
                 <input

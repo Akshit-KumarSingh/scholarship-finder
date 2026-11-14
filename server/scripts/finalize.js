@@ -1,5 +1,5 @@
 /**
- * npm run finalize -- <scheme-id> [--dry-run]
+ * node scripts/finalize.js <scheme-id> [--dry-run]     (or: npm run finalize -- <scheme-id>)
  *
  * Turns a fully reviewed review file into a normal record in
  * data/schemes.json with verified: true. Refuses, and lists what's left,
@@ -9,11 +9,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { finalizeRecord, upsertRecord } from "../lib/verification.js";
+import { finalizeRecord, upgradeReview, upsertRecord } from "../lib/verification.js";
 
 const [schemeId] = process.argv.slice(2);
 if (!schemeId || schemeId.startsWith("--")) {
-  console.error("Usage: npm run finalize -- <scheme-id> [--dry-run]");
+  console.error("Usage: node scripts/finalize.js <scheme-id> [--dry-run]");
   process.exit(1);
 }
 
@@ -29,13 +29,17 @@ try {
   process.exit(1);
 }
 
+// Review files from before a field existed get it added as "not reviewed yet".
+const added = upgradeReview(review);
+if (added.length) console.log(`New field(s) since this PDF was reviewed: ${added.join(", ")}`);
+
 let record;
 try {
   record = finalizeRecord(review);
 } catch (err) {
   console.error(`\n${err.message}:`);
   for (const b of err.blockers || []) console.error(`  - ${b.key}: ${b.why}`);
-  console.error(`\nContinue with: npm run review -- ${schemeId} --by "Your Name"\n`);
+  console.error(`\nContinue with: node scripts/review.js ${schemeId} --by "Your Name"\n`);
   process.exit(1);
 }
 

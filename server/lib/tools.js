@@ -51,6 +51,11 @@ export const toolSchemas = [
             type: "boolean",
             description: "Only if the student stated it. Never guess.",
           },
+          board_percentile: {
+            type: "number",
+            description:
+              "The student's percentile RANK in their Class XII board (e.g. 'top 10%' = 90). Not their marks. Only if the student stated it. Never guess or convert marks into a percentile.",
+          },
         },
         required: ["income", "category"],
       },
@@ -188,6 +193,21 @@ export function checkScheme(s, profile) {
     } else if (Number(profile.marks_pct) < e.min_marks_pct) {
       fails.push(
         `needs ${e.min_marks_pct}% minimum, you reported ${profile.marks_pct}%`,
+      );
+    }
+  }
+
+  // A rank among the board's successful candidates, not a score. Marks can't
+  // be turned into a percentile without the board's result data, so unless
+  // the student states their percentile, this stays unchecked ("possible").
+  if (e.min_board_percentile != null) {
+    if (!known(profile.board_percentile)) {
+      unchecked.push(
+        `board_percentile: needs a rank above the ${e.min_board_percentile}th percentile in your Class XII board`,
+      );
+    } else if (Number(profile.board_percentile) <= e.min_board_percentile) {
+      fails.push(
+        `needs a rank above the ${e.min_board_percentile}th percentile in your Class XII board, you reported ${profile.board_percentile}th`,
       );
     }
   }

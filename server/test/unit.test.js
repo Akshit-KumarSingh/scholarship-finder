@@ -2,7 +2,9 @@
  * Run with:  npm run test:unit
  *
  * No database, no LLM, no .env needed. These run the real eligibility rules
- * on data/schemes.json, the input validation, and the agent's guard against
+ * on a frozen copy of the placeholder data (test/fixtures/schemes-placeholder.json,
+ * so verifying real schemes into data/schemes.json doesn't change what these
+ * tests mean), the input validation, and the agent's guard against
  * invented fields. (test/tools.test.js covers the same rules end to end
  * through MongoDB, plus retrieval.)
  */
@@ -14,7 +16,7 @@ import { ProfileSchema, ChatSchema } from "../lib/validate.js";
 import { prepareEligibilityArgs } from "../lib/agent.js";
 
 const all = JSON.parse(
-  readFileSync(new URL("../data/schemes.json", import.meta.url), "utf8"),
+  readFileSync(new URL("./fixtures/schemes-placeholder.json", import.meta.url), "utf8"),
 ).filter((s) => !s.skip && s.id !== "_meta");
 
 const ids = (rows) => rows.map((r) => r.id);
@@ -146,4 +148,38 @@ test("a made-up scheme id is rejected with the valid list", () => {
 test("real scheme ids pass, and no ids at all is fine", () => {
   assert.doesNotThrow(() => assertKnownIds(["css-ug", "pms-obc"], all));
   assert.doesNotThrow(() => assertKnownIds(undefined, all));
+});
+
+/* ---------------------------------------------------------------- */
+/* Board percentile: a rank, not a score (from the real CSSS PDF)     */
+/* ---------------------------------------------------------------- */
+
+// css-ug as the real guidelines state it: above the 80th percentile of the
+// board, no marks rule for applying fresh (50% is the renewal rule).
+const cssReal = {
+  ...all.find((s) => s.id === "css-ug"),
+  eligibility: { ...all.find((s) => s.id === "css-ug").eligibility, min_marks_pct: null, min_board_percentile: 80 },
+};
+const student = { ...btech, year_of_study: 1, gender: "MALE", marks_pct: 92, disability: false };
+
+test("percentile rule: unknown rank keeps the scheme 'possible', even with high marks", () => {
+  const r = evaluateSchemes([cssReal], student);
+  assert.equal(r.eligible.length, 0, "92% marks says nothing about the board percentile");
+  assert.match(r.possible[0].unchecked.join(), /board_percentile: needs a rank above the 80th percentile/);
+  assert.deepEqual(r.missing_fields, ["board_percentile"]);
+});
+
+test("percentile rule: a stated rank is checked (above 80 passes, 80 or below fails)", () => {
+  assert.equal(evaluateSchemes([cssReal], { ...student, board_percentile: 85 }).eligible.length, 1);
+  const r = evaluateSchemes([cssReal], { ...student, board_percentile: 70 });
+  assert.match(r.near_misses[0].reason, /above the 80th percentile .* you reported 70th/);
+});
+
+test("board_percentile is validated and dropped unless the student talked about rank", () => {
+  assert.equal(ProfileSchema.parse({ income: 1, category: "SC", board_percentile: "85" }).board_percentile, 85);
+  assert.equal(ProfileSchema.safeParse({ income: 1, category: "SC", board_percentile: 150 }).success, false);
+  const said = "I scored 92% in Class 12.";
+  assert.deepEqual(prepareEligibilityArgs({ ...btech, board_percentile: 92 }, said, null).dropped, ["board_percentile"]);
+  const ranked = "I was in the top 10% of my board.";
+  assert.equal(prepareEligibilityArgs({ ...btech, board_percentile: 90 }, ranked, null).args.board_percentile, 90);
 });

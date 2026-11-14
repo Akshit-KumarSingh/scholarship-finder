@@ -28,6 +28,9 @@ export const EligibilitySchema = z.object({
   year_of_study: z.array(z.number()),
   gender: z.string(),
   min_marks_pct: z.number().nullable(),
+  // A rank, not a score: "above the 80th percentile of your Class XII board".
+  // Optional so every older record still fits.
+  min_board_percentile: z.number().nullable().optional(),
   requires_disability: z.boolean(),
   domicile_required: z.boolean(),
 });
@@ -89,6 +92,7 @@ export const FIELDS = [
   { key: "eligibility.year_of_study", label: "Years of study", kind: "list", schema: z.array(z.number().int().min(1).max(10)), empty: [] },
   { key: "eligibility.gender", label: "Gender", kind: "gender", schema: z.enum(["ALL", "MALE", "FEMALE"]), empty: "ALL" },
   { key: "eligibility.min_marks_pct", label: "Minimum marks (%)", kind: "percent", schema: z.number().min(0).max(100), empty: null },
+  { key: "eligibility.min_board_percentile", label: "Minimum board percentile (rank)", kind: "percentile", schema: z.number().min(0).max(100), empty: null },
   { key: "eligibility.requires_disability", label: "Needs disability certificate", kind: "disability", schema: z.boolean(), empty: false },
   { key: "eligibility.domicile_required", label: "Domicile required", kind: "boolean", schema: z.boolean(), empty: false },
   { key: "sections.eligibility", label: "Eligibility text", kind: "prose", schema: z.string(), empty: "" },
@@ -159,11 +163,17 @@ Value types:
 - eligibility.income_max: annual family income ceiling in RUPEES as a number. "Rs 2.5 lakh" is 250000, never 2.5 or 250.
 - eligibility.categories: any of GENERAL OBC SC ST EWS MINORITY, or ["ALL"].
 - eligibility.course_levels: any of SCHOOL DIPLOMA UG PG.
-- eligibility.year_of_study: numbers, e.g. [1,2,3,4].
+- eligibility.year_of_study: the years of study in which a student can apply FRESH, e.g. [1] or [1,2,3,4].
 - eligibility.gender: "ALL", "MALE" or "FEMALE".
-- eligibility.min_marks_pct: number or null.
+- eligibility.min_marks_pct: the minimum marks/percentage a student must have SCORED to apply fresh, or null.
+- eligibility.min_board_percentile: a minimum RANK among board candidates, e.g. "above 80th percentile of successful candidates" -> 80. Never put a percentile into min_marks_pct.
 - eligibility.requires_disability, eligibility.domicile_required: true or false.
 - sections.*: prose copied from the document (lightly cleaned of headers and page numbers; keep paragraph breaks).
+  sections.documents: every document, certificate or account the student needs, from anywhere in the document.
+
+Fresh vs renewal (important):
+- eligibility.* fields describe who may APPLY FRESH. Rules for RENEWING or continuing a scholarship (marks needed to renew, attendance, conduct) must NOT go into eligibility.* fields; put them in sections.eligibility or sections.process.
+- eligibility.categories restricts WHO MAY APPLY. If every category may apply and some only get reserved slots or quotas, use ["ALL"]. A list of categories that slots are shared between or reserved for is not a restriction.
 
 Evidence rules (these are checked by code against the real text):
 - "text" must be copied EXACTLY from the page, word for word: one sentence or phrase, under 300 characters. Do not paraphrase, translate or fix typos.
@@ -193,27 +203,81 @@ export function normalizeText(s) {
     .trim()
     .toLowerCase();
 }
-// Letters and digits only: survives missing/extra spaces and punctuation.
+// Spaces and hyphens removed. Many government PDFs lose the spaces between
+// words when the text is extracted ("ofshortfall", "interoperableamong") and
+// break "2022-23" over a line. A quote that matches once only those are
+// ignored is the same text, so it counts as an exact match.
+const squash = (s) => normalizeText(s).replace(/[\s-]+/g, "");
+// Letters and digits only: also ignores punctuation, so a human should look.
 const compact = (s) => normalizeText(s).replace(/[^a-z0-9]/g, "");
 
 /**
  * Where does a quote really appear?
- *   exact        on the cited page (after normalizing spaces, quotes, case)
- *   approximate  on the cited page only after ignoring spaces/punctuation -> human should look
- *   wrong_page   only on other page(s)
- *   not_in_pdf   nowhere in the extracted text (fabricated or badly extracted)
+ *   exact         on the cited page (ignoring case, spacing, line breaks, curly quotes)
+ *   across_pages  starts on one page and finishes on the next (the cited page is one of them)
+ *   approximate   on the cited page only after also ignoring punctuation -> human should look
+ *   wrong_page    only on other page(s)
+ *   not_in_pdf    nowhere in the extracted text (made up, reworded, or badly extracted)
  */
 export function locateQuote(quote, citedPage, pages) {
-  const nq = normalizeText(quote);
+  const sq = squash(quote);
   const cq = compact(quote);
   if (cq.length < 4) return { result: "not_in_pdf", foundOn: [] };
-  const exactOn = pages.filter((p) => normalizeText(p.text).includes(nq)).map((p) => p.page);
-  const looseOn = pages.filter((p) => compact(p.text).includes(cq)).map((p) => p.page);
+  const exactOn = pages.filter((p) => squash(p.text).includes(sq)).map((p) => p.page);
   if (exactOn.includes(citedPage)) return { result: "exact", foundOn: exactOn };
+
+  // A sentence cut by a page break: look at each pair of neighbouring pages.
+  const sorted = [...pages].sort((a, b) => a.page - b.page);
+  for (let i = 0; i + 1 < sorted.length; i++) {
+    const [a, b] = [sorted[i], sorted[i + 1]];
+    if (exactOn.includes(a.page) || exactOn.includes(b.page)) continue;
+    if (squash(a.text + " " + b.text).includes(sq) && [a.page, b.page].includes(citedPage)) {
+      return { result: "across_pages", foundOn: [a.page, b.page] };
+    }
+  }
+
+  const looseOn = pages.filter((p) => compact(p.text).includes(cq)).map((p) => p.page);
   if (looseOn.includes(citedPage)) return { result: "approximate", foundOn: looseOn };
   const elsewhere = [...new Set([...exactOn, ...looseOn])];
   if (elsewhere.length) return { result: "wrong_page", foundOn: elsewhere };
   return { result: "not_in_pdf", foundOn: [] };
+}
+
+/* Character trigrams of the letters only, so missing spaces don't matter. */
+const trigrams = (s) => {
+  const c = compact(s);
+  const out = new Set();
+  for (let i = 0; i + 3 <= c.length; i++) out.add(c.slice(i, i + 3));
+  return out;
+};
+const dice = (a, b) => {
+  if (!a.size || !b.size) return 0;
+  let both = 0;
+  for (const x of a) if (b.has(x)) both++;
+  return (2 * both) / (a.size + b.size);
+};
+
+/**
+ * For a quote that wasn't found: the most similar sentence (or pair of
+ * sentences) in the PDF, so the reviewer sees what the page really says.
+ * Returns null when nothing is reasonably close.
+ */
+export function closestText(quote, pages, { min = 0.5 } = {}) {
+  const q = trigrams(quote);
+  let best = null;
+  for (const p of pages) {
+    const sentences = String(p.text)
+      .split(/(?<=[.;:!?])\s+|\n{2,}|\n(?=\s*(?:[ivx]+|\d+)[.)]\s)/i)
+      .map((x) => x.replace(/\s+/g, " ").trim())
+      .filter((x) => x.length > 3);
+    const candidates = [...sentences, ...sentences.slice(0, -1).map((x, i) => x + " " + sentences[i + 1])];
+    for (const text of candidates) {
+      const score = dice(q, trigrams(text));
+      if (!best || score > best.score) best = { page: p.page, text, score };
+    }
+  }
+  if (!best || best.score < min) return null;
+  return { page: best.page, text: best.text.length > 300 ? best.text.slice(0, 297) + "…" : best.text, score: Math.round(best.score * 100) / 100 };
 }
 
 /* ------------------------------------------------------------------ */
@@ -246,6 +310,16 @@ export function parsePercents(text) {
   return [...new Set(out)];
 }
 
+/** Percentile ranks: "80th percentile", "80 th percentile", "top 20 percentile" -> 80 / 80 / 20. */
+export function parsePercentiles(text) {
+  const t = normalizeText(text);
+  const out = [];
+  const re = /(\d+(?:\.\d+)?)\s*(?:st|nd|rd|th)?\s*percentile/g;
+  let m;
+  while ((m = re.exec(t))) out.push(Number(m[1]));
+  return [...new Set(out)];
+}
+
 const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 const iso = (y, mo, d) =>
   `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -267,7 +341,7 @@ export function parseDates(text) {
 }
 
 const CATEGORY_WORDS = {
-  GENERAL: /\bgeneral\b/,
+  GENERAL: /\bgen(?:eral)?\b|unreserved|\bur\b/,
   OBC: /\bobcs?\b|other backward/,
   SC: /\bscs?\b|scheduled caste/,
   ST: /\bsts?\b|scheduled tribe/,
@@ -303,6 +377,10 @@ export function checkValueAgainstQuotes(kind, value, quotes) {
       break;
     case "percent":
       numeric(parsePercents, "percentage", (n) => `${n}%`);
+      if (/renew|continu/.test(t)) reasons.push("the quote talks about renewal; this field is for fresh applications only");
+      break;
+    case "percentile":
+      numeric(parsePercentiles, "percentile", (n) => `${n}th percentile`);
       break;
     case "date":
       numeric(parseDates, "date", (d) => d);
@@ -344,7 +422,12 @@ export function checkField(key, llmField, pages) {
   const spec = SPEC[key];
   const evidence = (llmField?.evidence || []).map((e) => {
     const where = locateQuote(e.text, e.page, pages);
-    return { page: e.page, text: e.text, match: where.result, found_on_pages: where.foundOn };
+    const item = { page: e.page, text: e.text, match: where.result, found_on_pages: where.foundOn };
+    if (where.result === "not_in_pdf") {
+      const near = closestText(e.text, pages);
+      if (near) item.closest = near;
+    }
+    return item;
   });
   let value = llmField?.value ?? null;
   if (spec.kind === "state" && typeof value === "string") value = value.trim().toUpperCase();
@@ -363,7 +446,13 @@ export function checkField(key, llmField, pages) {
   for (const e of evidence) {
     if (e.match === "approximate") reasons.push(`page ${e.page}: quote only matches after ignoring spaces/punctuation; compare with the PDF`);
     if (e.match === "wrong_page") reasons.push(`page ${e.page} cited, but the quote is on page ${e.found_on_pages.join(", ")}`);
-    if (e.match === "not_in_pdf") reasons.push(`page ${e.page}: quote not found anywhere in the PDF text (possibly made up)`);
+    if (e.match === "not_in_pdf") {
+      reasons.push(
+        e.closest
+          ? `page ${e.page}: quote not found word for word; the closest text is on page ${e.closest.page} (${Math.round(e.closest.score * 100)}% similar): "${e.closest.text.slice(0, 160)}"`
+          : `page ${e.page}: quote not found anywhere in the PDF text (possibly made up)`,
+      );
+    }
   }
   if (evidence.length && typed.success) {
     const usable = evidence.filter((e) => e.match !== "not_in_pdf").map((e) => e.text);
@@ -400,6 +489,30 @@ export function buildReview({ schemeId, sourcePdf, pages, llmOutput, meta = {} }
   };
   review.overall_status = overallStatus(review);
   return review;
+}
+
+/**
+ * Review files written before a field existed don't have it. Add it as
+ * "not reviewed yet", so the review tool asks about it and finalize waits
+ * for a human. Nothing already decided is touched. Returns the added keys.
+ */
+export function upgradeReview(review) {
+  const added = [];
+  for (const spec of FIELDS) {
+    if (review.fields[spec.key]) continue;
+    review.fields[spec.key] = {
+      label: spec.label,
+      llm_value: null,
+      value: spec.empty,
+      evidence: [],
+      status: "not_found",
+      reasons: ["new field, added after this PDF was extracted: check the PDF yourself"],
+      review: null,
+    };
+    added.push(spec.key);
+  }
+  if (added.length) review.overall_status = overallStatus(review);
+  return added;
 }
 
 /* ------------------------------------------------------------------ */
@@ -498,6 +611,7 @@ export function finalizeRecord(review) {
       year_of_study: v("eligibility.year_of_study"),
       gender: v("eligibility.gender"),
       min_marks_pct: v("eligibility.min_marks_pct"),
+      min_board_percentile: v("eligibility.min_board_percentile"),
       requires_disability: v("eligibility.requires_disability"),
       domicile_required: v("eligibility.domicile_required"),
     },
@@ -542,7 +656,7 @@ export function selectIngestable(raw, { allowUnverified = false } = {}) {
   if (unverified.length && !allowUnverified) {
     const err = new Error(
       `Refusing to ingest ${unverified.length} unverified scheme(s): ${unverified.join(", ")}.\n` +
-        `Verify them (npm run review / npm run finalize), or for development only run: npm run ingest:dev`,
+        `Verify them (node scripts/review.js, then node scripts/finalize.js), or for development only run: npm run ingest:dev`,
     );
     err.unverified = unverified;
     throw err;
@@ -581,7 +695,7 @@ export function renderReport(review) {
     lines.push(`- **Pages with almost no text (scanned?): ${review.low_text_pages.join(", ")}.** Anything on these pages must be checked by eye.`);
   }
   lines.push(`- Overall: **${review.overall_status.toUpperCase()}** · reviewed ${count(isReviewed)}/${fields.length} · needs review ${count((f) => !isReviewed(f) && f.status === "needs_review")} · not in PDF? ${count((f) => !isReviewed(f) && f.status === "not_found")}`);
-  lines.push("- Machine checks are not approval. Every field needs a human decision: `npm run review -- " + review.scheme_id + " --by \"Your Name\"`");
+  lines.push("- Machine checks are not approval. Every field needs a human decision: `node scripts/review.js " + review.scheme_id + " --by \"Your Name\"`");
   lines.push("");
 
   const attention = fields.filter(([, f]) => !isReviewed(f) && f.status !== "pending");
@@ -611,9 +725,11 @@ export function renderReport(review) {
   lines.push("");
   lines.push("## Next steps");
   lines.push("");
-  lines.push(`1. Review: \`npm run review -- ${review.scheme_id} --by "Your Name"\` (shows each field with its quote and page; approve, correct, or confirm not in PDF).`);
-  lines.push(`2. When everything is reviewed: \`npm run finalize -- ${review.scheme_id}\` writes the verified record into data/schemes.json.`);
+  lines.push(`1. Review: \`node scripts/review.js ${review.scheme_id} --by "Your Name"\` (shows each field with its quote and page; approve, correct, or confirm not in PDF).`);
+  lines.push(`2. When everything is reviewed: \`node scripts/finalize.js ${review.scheme_id}\` writes the verified record into data/schemes.json.`);
   lines.push("3. Then: `npm run ingest`.");
+  lines.push("");
+  lines.push("Run these from the `server` folder. On Windows PowerShell use the `node scripts/...` form shown here: `npm run x -- --option` loses the option names.");
   return lines.join("\n") + "\n";
 }
 
@@ -631,7 +747,10 @@ export function parseTypedValue(key, input) {
       return Number.isFinite(n) ? n : s;
     }
     case "percent":
-      return Number(s.replace("%", ""));
+    case "percentile": {
+      const n = parseFloat(s.replace(/,/g, ""));
+      return Number.isFinite(n) ? n : s;
+    }
     case "date":
       return parseDates(s)[0] ?? s;
     case "categories":
